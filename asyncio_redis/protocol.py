@@ -57,6 +57,13 @@ __all__ = (
     'ZScoreBoundary',
 )
 
+def return_type(*types):
+    def decorator(func):
+        func.return_type = types
+        return func
+    return decorator
+
+
 NoneType = type(None)
 
 
@@ -158,7 +165,7 @@ class MultiBulkReply(object):
 
     def _decode(self, result):
         """ Decode bytes to native Python types. """
-        if isinstance(result, (StatusReply, int, float, MultiBulkReply)):
+        if isinstance(result, (StatusReply, int, long, float, MultiBulkReply)):
             # Note that MultiBulkReplies can be nested.
             # e.g. in the 'scan' operation.
             return result
@@ -245,7 +252,7 @@ class PostProcessors(object):
             (NativeType, NoneType): cls.bytes_to_native_or_none,
             InfoReply: cls.bytes_to_info,
             ClientListReply: cls.bytes_to_clientlist,
-            str: cls.bytes_to_str,
+            unicode: cls.bytes_to_str,
             bool: cls.int_to_bool,
             BlockingPopReply: cls.multibulk_as_blocking_pop_reply,
             ZRangeReply: cls.multibulk_as_zrangereply,
@@ -410,7 +417,7 @@ class PostProcessors(object):
     @asyncio.coroutine
     def any_to_evalscript(protocol, result):
         # Result can be native, int, MultiBulkReply or even a nested structure
-        assert isinstance(result, (int, bytes, MultiBulkReply, NoneType))
+        assert isinstance(result, (int, long, bytes, MultiBulkReply, NoneType))
         return EvalScriptReply(protocol, result)
 
 
@@ -460,8 +467,7 @@ class CommandCreator(object):
     @property
     def return_type(self):
         """ Return type as defined in the method's annotation. """
-        return NoneType
-        return self.specs.annotations.get('return', None)
+        return getattr(self.method, 'return_type', None)
 
     @property
     def params(self):
@@ -1901,8 +1907,10 @@ class RedisProtocol(asyncio.Protocol):
         """ Set multiple hash fields to multiple values """
         data = []
         for k, v in values.items():
-            assert isinstance(k, self.native_type)
-            assert isinstance(v, self.native_type)
+            assert isinstance(k, self.native_type), \
+                "{0} is not {1}".format(k, self.native_type)
+            assert isinstance(v, self.native_type), \
+                "{0} is not {1}".format(v, self.native_type)
 
             data.append(self.encode_from_native(k))
             data.append(self.encode_from_native(v))
@@ -2628,14 +2636,14 @@ class HiRedisProtocol(RedisProtocol):
     __metaclass__ = _RedisProtocolMeta
 
     def __init__(self, password=None, db=0, encoder=None,
-                 connection_lost_callback=None, enable_typechecking=True,
+                 connection_lost_callback=None, enable_typechecking=False,
                  loop=None):
         super(HiRedisProtocol, self).__init__(
             password=password,
             db=db,
             encoder=encoder,
             connection_lost_callback=connection_lost_callback,
-            enable_typechecking=enable_typechecking,
+            enable_typechecking=False,
             loop=loop)
         self._hiredis = None
         assert hiredis, \
@@ -2658,7 +2666,7 @@ class HiRedisProtocol(RedisProtocol):
                 break
 
     def _process_hiredis_item(self, item, cb):
-        if isinstance(item, (bytes, int)):
+        if isinstance(item, (bytes, int, long)):
             cb(item)
         elif isinstance(item, list):
             reply = MultiBulkReply(self, len(item), loop=self._loop)
@@ -2675,4 +2683,4 @@ class HiRedisProtocol(RedisProtocol):
     @asyncio.coroutine
     def _reader_coroutine(self):
         # We don't need this one.
-        return
+        raise Return(None)

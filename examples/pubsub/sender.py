@@ -15,7 +15,7 @@ if __name__ == '__main__':
     def run():
         # Create a new redis connection (this will also auto reconnect)
         connection = yield From(
-            asyncio_redis.Connection.create('127.0.0.1', 6379))
+            asyncio_redis.Connection.create('localhost', 6379))
 
         try:
             while True:

@@ -3,32 +3,39 @@
 Example of how an 'smembers' call gets streamed when it's a big reply, covering
 multiple IP packets.
 """
-import asyncio
+import trollius
+from trollius import From
 import logging
 import asyncio_redis
 
 if __name__ == '__main__':
-    loop = asyncio.get_event_loop()
+    loop = trollius.get_event_loop()
 
     # Enable logging
     logging.getLogger().addHandler(logging.StreamHandler())
     logging.getLogger().setLevel(logging.INFO)
 
     def run():
-        connection = yield from asyncio_redis.Connection.create(host='localhost', port=6379)
+        connection = yield From(asyncio_redis.Connection.create(
+            host='localhost', port=6379))
 
         # Create a set that contains a million items
-        print('Creating big set contains a million items (Can take about half a minute)')
+        print('Creating big set contains a million items (Can'
+              ' take about half a minute)')
 
-        yield from connection.delete(['my-big-set'])
+        yield From(connection.delete(['my-big-set']))
 
         # We will suffix all the items with a very long key, just to be sure
         # that this needs many IP packets, in order to send or receive this.
-        long_string = 'abcdefghij' * 1000 # len=10k
+        long_string = 'abcdefghij' * 1000  # len=10k
 
-        for prefix in range(10):
+        for prefix in xrange(10):
             print('Callidng redis sadd:', prefix, '/10')
-            yield from connection.sadd('my-big-set', ('%s-%s-%s' % (prefix, i, long_string)  for i in range(10 * 1000) ))
+            yield From(
+                connection.sadd(
+                    'my-big-set',
+                    ('%s-%s-%s' % (prefix, i, long_string)
+                    for i in xrange(10 * 1000))))
         print('Done\n')
 
         # Now stream the values from the database:
@@ -40,13 +47,14 @@ if __name__ == '__main__':
         # information to create a SetReply instance. Probably the first packet
         # will also contain the first X members, so we don't have to wait for
         # these anymore.
-        set_reply = yield from connection.smembers('my-big-set')
+        set_reply = yield From(connection.smembers('my-big-set'))
         print('Got: ', set_reply)
 
-        # Stream the items, this will probably wait for the next IP packets to come in.
+        # Stream the items, this will probably wait for the next IP packets to
+        # come in.
         count = 0
         for f in set_reply:
-            m = yield from f
+            m = yield From(f)
             count += 1
             if count % 1000 == 0:
                 print('Received %i items' % count)

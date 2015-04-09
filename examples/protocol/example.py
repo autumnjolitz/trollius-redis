@@ -2,7 +2,8 @@
 """
 Simple example that sets a key, and retrieves it again.
 """
-import asyncio
+import trollius as asyncio
+from trollius import From
 from asyncio_redis import RedisProtocol
 
 if __name__ == '__main__':
@@ -10,13 +11,14 @@ if __name__ == '__main__':
 
     def run():
         # Create connection
-        transport, protocol = yield from loop.create_connection(RedisProtocol, 'localhost', 6379)
+        transport, protocol = yield From(
+            loop.create_connection(RedisProtocol, 'localhost', 6379))
 
         # Set a key
-        yield from protocol.set('key', 'value')
+        yield From(protocol.set('key', 'value'))
 
         # Retrieve a key
-        result = yield from protocol.get('key')
+        result = yield From(protocol.get('key'))
 
         # Print result
         print ('Succeeded', result == 'value')

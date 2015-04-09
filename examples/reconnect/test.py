@@ -3,7 +3,8 @@
 Example of how the connection should reconnect to the server.
 It's a loop that publishes 'message' in 'our-channel'.
 """
-import asyncio
+import trollius as asyncio
+from trollius import From
 import logging
 import asyncio_redis
 
@@ -15,15 +16,16 @@ if __name__ == '__main__':
     logging.getLogger().setLevel(logging.INFO)
 
     def run():
-        connection = yield from asyncio_redis.Connection.create(host='localhost', port=6379)
+        connection = yield From(
+            asyncio_redis.Connection.create(host='localhost', port=6379))
 
         try:
             while True:
-                yield from asyncio.sleep(.5)
+                yield From(asyncio.sleep(.5))
 
                 try:
                     # Try to send message
-                    yield from connection.publish('our-channel', 'message')
+                    yield From(connection.publish('our-channel', 'message'))
                 except Exception as e:
                     print ('errero', repr(e))
         finally:

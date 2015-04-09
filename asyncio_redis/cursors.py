@@ -1,4 +1,5 @@
-import asyncio
+import trollius as asyncio
+from trollius import From, Return
 from collections import deque
 
 __all__ = (
@@ -9,7 +10,7 @@ __all__ = (
 )
 
 
-class Cursor:
+class Cursor(object):
     """
     Cursor for walking through the results of a :func:`scan
     <asyncio_redis.RedisProtocol.scan>` query.
@@ -28,7 +29,7 @@ class Cursor:
     def _fetch_more(self):
         """ Get next chunk of keys from Redis """
         if not self._done:
-            chunk = yield from self._scanfunc(self._cursor)
+            chunk = yield From(self._scanfunc(self._cursor))
             self._cursor = chunk.new_cursor_pos
 
             if chunk.new_cursor_pos == 0:
@@ -44,10 +45,10 @@ class Cursor:
         It returns `None` after the last item.
         """
         if not self._queue and not self._done:
-            yield from self._fetch_more()
+            yield From(self._fetch_more())
 
         if self._queue:
-            return self._queue.popleft()
+            raise Return(self._queue.popleft())
 
     @asyncio.coroutine
     def fetchall(self):
@@ -55,13 +56,13 @@ class Cursor:
         results = []
 
         while True:
-            i = yield from self.fetchone()
+            i = yield From(self.fetchone())
             if i is None:
                 break
             else:
                 results.append(i)
 
-        return results
+        raise Return(results)
 
 
 class SetCursor(Cursor):
@@ -71,8 +72,8 @@ class SetCursor(Cursor):
     """
     @asyncio.coroutine
     def fetchall(self):
-        result = yield from super().fetchall()
-        return set(result)
+        result = yield From(super(SetCursor, self).fetchall())
+        raise Return(set(result))
 
 
 class DictCursor(Cursor):
@@ -89,12 +90,12 @@ class DictCursor(Cursor):
         Get next { key: value } tuple
         It returns `None` after the last item.
         """
-        key = yield from super().fetchone()
-        value = yield from super().fetchone()
+        key = yield From(super(DictCursor, self).fetchone())
+        value = yield From(super(DictCursor, self).fetchone())
 
         if key is not None:
             key, value = self._parse(key, value)
-            return { key: value }
+            raise Return({key: value})
 
     @asyncio.coroutine
     def fetchall(self):
@@ -102,13 +103,13 @@ class DictCursor(Cursor):
         results = {}
 
         while True:
-            i = yield from self.fetchone()
+            i = yield From(self.fetchone())
             if i is None:
                 break
             else:
                 results.update(i)
 
-        return results
+        raise Return(results)
 
 
 class ZCursor(DictCursor):

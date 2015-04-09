@@ -6,12 +6,13 @@ provides raw access to the redis server.
 """
 
 __all__ = (
-        'BaseEncoder',
-        'BytesEncoder',
-        'UTF8Encoder',
+    'BaseEncoder',
+    'BytesEncoder',
+    'UTF8Encoder',
 )
 
-class BaseEncoder:
+
+class BaseEncoder(object):
     """
     Abstract base class for all encoders.
     """
@@ -58,7 +59,7 @@ class StringEncoder(BaseEncoder):
     encoding = None
 
     #: The native Python type from which we encode, or to which we decode.
-    native_type = str
+    native_type = unicode
 
     def encode_from_native(self, data):
         """ string to bytes """

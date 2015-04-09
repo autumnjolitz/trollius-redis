@@ -1,13 +1,13 @@
 __all__ = (
-        'ConnectionLostError',
-        'Error',
-        'ErrorReply',
-        'NoAvailableConnectionsInPoolError',
-        'NoRunningScriptError',
-        'NotConnectedError',
-        'ScriptKilledError',
-        'TimeoutError',
-        'TransactionError',
+    'ConnectionLostError',
+    'Error',
+    'ErrorReply',
+    'NoAvailableConnectionsInPoolError',
+    'NoRunningScriptError',
+    'NotConnectedError',
+    'ScriptKilledError',
+    'TimeoutError',
+    'TransactionError',
 )
 
 
@@ -50,6 +50,7 @@ class NoAvailableConnectionsInPoolError(NotConnectedError):
     """
     When the connection pool has no available connections.
     """
+
 
 class ScriptKilledError(Error):
     """ Script was killed during an evalsha call. """

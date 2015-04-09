@@ -3,13 +3,14 @@ from .exceptions import NoAvailableConnectionsInPoolError
 from .protocol import RedisProtocol, Script
 
 from functools import wraps
-import asyncio
+import trollius as asyncio
+from trollius import From, Return
 
 
 __all__ = ('Pool', )
 
 
-class Pool:
+class Pool(object):
     """
     Pool of connections. Each
     Takes care of setting up the connection and connection pooling.
@@ -24,7 +25,7 @@ class Pool:
     """
     @classmethod
     @asyncio.coroutine
-    def create(cls, host='localhost', port=6379, *, password=None, db=0,
+    def create(cls, host='localhost', port=6379, password=None, db=0,
                encoder=None, poolsize=1, auto_reconnect=True, loop=None,
                protocol_class=RedisProtocol):
         """
@@ -32,13 +33,15 @@ class Pool:
 
         :param host: Address, either host or unix domain socket path
         :type host: str
-        :param port: TCP port. If port is 0 then host assumed to be unix socket path
+        :param port: TCP port. If port is 0 then host assumed to be unix socket
+                     path
         :type port: int
         :param password: Redis database password
         :type password: bytes
         :param db: Redis database
         :type db: int
-        :param encoder: Encoder to use for encoding to or decoding from redis bytes to a native type.
+        :param encoder: Encoder to use for encoding to or decoding from redis
+                        bytes to a native type.
         :type encoder: :class:`~asyncio_redis.encoders.BaseEncoder` instance.
         :param poolsize: The number of parallel connections.
         :type poolsize: int
@@ -57,16 +60,18 @@ class Pool:
         self._connections = []
 
         for i in range(poolsize):
-            connection = yield from Connection.create(host=host, port=port,
-                            password=password, db=db, encoder=encoder,
-                            auto_reconnect=auto_reconnect, loop=loop,
-                            protocol_class=protocol_class)
+            connection = yield From(Connection.create(
+                host=host, port=port,
+                password=password, db=db, encoder=encoder,
+                auto_reconnect=auto_reconnect, loop=loop,
+                protocol_class=protocol_class))
             self._connections.append(connection)
 
-        return self
+        raise Return(self)
 
     def __repr__(self):
-        return 'Pool(host=%r, port=%r, poolsize=%r)' % (self._host, self._port, self._poolsize)
+        return 'Pool(host=%r, port=%r, poolsize=%r)' % \
+            (self._host, self._port, self._poolsize)
 
     @property
     def poolsize(self):
@@ -78,20 +83,20 @@ class Pool:
         """
         Return how many protocols are in use.
         """
-        return sum([ 1 for c in self._connections if c.protocol.in_use ])
+        return sum([1 for c in self._connections if c.protocol.in_use])
 
     @property
     def connections_connected(self):
         """
         The amount of open TCP connections.
         """
-        return sum([ 1 for c in self._connections if c.protocol.is_connected ])
+        return sum([1 for c in self._connections if c.protocol.is_connected])
 
     def _get_free_connection(self):
         """
         Return the next protocol instance that's not in use.
-        (A protocol in pubsub mode or doing a blocking request is considered busy,
-        and can't be used for anything else.)
+        (A protocol in pubsub mode or doing a blocking request is considered
+         busy, and can't be used for anything else.)
         """
         self._shuffle_connections()
 
@@ -101,7 +106,8 @@ class Pool:
 
     def _shuffle_connections(self):
         """
-        'shuffle' protocols. Make sure that we devide the load equally among the protocols.
+        'shuffle' protocols. Make sure that we devide the load equally among
+        the protocols.
         """
         self._connections = self._connections[1:] + self._connections[:1]
 
@@ -115,21 +121,23 @@ class Pool:
         if connection:
             return getattr(connection, name)
         else:
-            raise NoAvailableConnectionsInPoolError('No available connections in the pool: size=%s, in_use=%s, connected=%s' % (
-                                self.poolsize, self.connections_in_use, self.connections_connected))
-
+            raise NoAvailableConnectionsInPoolError(
+                'No available connections in the pool: size=%s, \
+in_use=%s, connected=%s' % (self.poolsize, self.connections_in_use,
+                            self.connections_connected))
 
     # Proxy the register_script method, so that the returned object will
     # execute on any available connection in the pool.
     @asyncio.coroutine
     @wraps(RedisProtocol.register_script)
-    def register_script(self, script:str) -> Script:
+    def register_script(self, script):
         # Call register_script from the Protocol.
-        script = yield from self.__getattr__('register_script')(script)
+        script = yield From(self.__getattr__('register_script')(script))
         assert isinstance(script, Script)
 
-        # Return a new script instead that runs it on any connection of the pool.
-        return Script(script.sha, script.code, lambda: self.evalsha)
+        # Return a new script instead that runs it on any connection of the
+        # pool.
+        raise Return(Script(script.sha, script.code, lambda: self.evalsha))
 
     def close(self):
         """

@@ -1,6 +1,5 @@
-import asyncio
-from asyncio.tasks import gather
-
+import trollius as asyncio
+from trollius import From, Return
 __all__ = (
     'BlockingPopReply',
     'DictReply',
@@ -51,14 +50,13 @@ class DictReply:
 
     def __iter__(self):
         """ Yield a list of futures that yield { key: value } tuples. """
-        i = iter(self._result)
 
         @asyncio.coroutine
         def getter(f):
             """ Coroutine which processes one item. """
-            key, value = yield from f
+            key, value = yield From(f)
             key, value = self._parse(key, value)
-            return key, value
+            raise Return(key, value)
 
         for _ in range(self._result.count // 2):
             read_future = self._result._read(count=2)
@@ -69,11 +67,13 @@ class DictReply:
         """
         Return the result as a Python dictionary.
         """
-        data = yield from self._result._read(count=self._result.count)
-        return dict(self._parse(k, v) for k, v in zip(data[::2], data[1::2]))
+        data = yield From(self._result._read(count=self._result.count))
+        raise Return(dict(
+            self._parse(k, v) for k, v in zip(data[::2], data[1::2])))
 
     def __repr__(self):
-        return '%s(length=%r)' % (self.__class__.__name__, int(self._result.count / 2))
+        return '%s(length=%r)' % (
+            self.__class__.__name__, int(self._result.count / 2))
 
 
 class ZRangeReply(DictReply):
@@ -107,8 +107,8 @@ class SetReply:
     @asyncio.coroutine
     def asset(self):
         """ Return the result as a Python ``set``.  """
-        data = yield from self._result._read(count=self._result.count)
-        return set(data)
+        data = yield From(self._result._read(count=self._result.count))
+        raise Return(set(data))
 
     def __repr__(self):
         return 'SetReply(length=%r)' % (self._result.count)
@@ -137,8 +137,8 @@ class ListReply:
     @asyncio.coroutine
     def aslist(self):
         """ Return the result as a Python ``list``. """
-        data = yield from self._result._read(count=self._result.count)
-        return data
+        data = yield From(self._result._read(count=self._result.count))
+        raise Return(data)
 
     def __repr__(self):
         return 'ListReply(length=%r)' % (self._result.count, )
@@ -164,7 +164,8 @@ class BlockingPopReply:
         return self._value
 
     def __repr__(self):
-        return 'BlockingPopReply(list_name=%r, value=%r)' % (self.list_name, self.value)
+        return 'BlockingPopReply(list_name=%r, value=%r)' % (
+            self.list_name, self.value)
 
 
 class ConfigPairReply:
@@ -184,24 +185,25 @@ class ConfigPairReply:
         return self._value
 
     def __repr__(self):
-        return 'ConfigPairReply(parameter=%r, value=%r)' % (self.parameter, self.value)
+        return 'ConfigPairReply(parameter=%r, value=%r)' % (
+            self.parameter, self.value)
 
 
 class InfoReply:
     """ :func:`~asyncio_redis.RedisProtocol.info` reply. """
     def __init__(self, data):
-        self._data = data # TODO: implement parser logic
+        self._data = data  # TODO: implement parser logic
 
 
 class ClientListReply:
     """ :func:`~asyncio_redis.RedisProtocol.client_list` reply. """
     def __init__(self, data):
-        self._data = data # TODO: implement parser logic
+        self._data = data  # TODO: implement parser logic
 
 
 class PubSubReply:
     """ Received pubsub message. """
-    def __init__(self, channel, value, *, pattern=None):
+    def __init__(self, channel, value, pattern=None):
         self._channel = channel
         self._value = value
         self._pattern = pattern
@@ -252,22 +254,21 @@ class EvalScriptReply:
         @asyncio.coroutine
         def decode(obj):
             if isinstance(obj, int):
-                return obj
+                raise Return(obj)
 
             elif isinstance(obj, bytes):
-                return self._protocol.decode_to_native(self._value)
+                raise Return(self._protocol.decode_to_native(self._value))
 
             elif isinstance(obj, MultiBulkReply):
                 # Unpack MultiBulkReply recursively as Python list.
                 result = []
                 for f in obj:
-                    item = yield from f
-                    result.append((yield from decode(item)))
-                return result
+                    item = yield From(f)
+                    result.append((yield From(decode(item))))
+                raise Return(result)
 
             else:
                 # Nonetype, or decoded bytes.
-                return obj
-
-        return (yield from decode(self._value))
-
+                raise Return(obj)
+        r = yield From(decode(self._value))
+        raise Return(r)

@@ -3,6 +3,7 @@
 Example of how an 'smembers' call gets streamed when it's a big reply, covering
 multiple IP packets.
 """
+from __future__ import print_function
 import trollius
 from trollius import From
 import logging

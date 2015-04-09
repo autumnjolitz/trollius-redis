@@ -2,6 +2,7 @@
 """
 Simple example that sets a key, and retrieves it again.
 """
+from __future__ import print_function
 import trollius as asyncio
 from trollius import From
 from asyncio_redis import RedisProtocol

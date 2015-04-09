@@ -3,6 +3,7 @@
 Example of how the connection should reconnect to the server.
 It's a loop that publishes 'message' in 'our-channel'.
 """
+from __future__ import print_function
 import trollius as asyncio
 from trollius import From
 import logging
@@ -27,7 +28,7 @@ if __name__ == '__main__':
                     # Try to send message
                     yield From(connection.publish('our-channel', 'message'))
                 except Exception as e:
-                    print ('errero', repr(e))
+                    print ('error', repr(e))
         finally:
             connection.close()
 

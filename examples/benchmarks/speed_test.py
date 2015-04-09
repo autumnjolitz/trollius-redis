@@ -2,7 +2,9 @@
 """
 Benchmank how long it takes to set 10,000 keys in the database.
 """
-import asyncio
+from __future__ import print_function
+import trollius as asyncio
+from trollius import From
 import logging
 import asyncio_redis
 import time
@@ -12,11 +14,11 @@ if __name__ == '__main__':
 
     # Enable logging
     logging.getLogger().addHandler(logging.StreamHandler())
-    logging.getLogger().setLevel(logging.INFO)
+    logging.getLogger().setLevel(logging.WARNING)
 
     def run():
         #connection = yield from asyncio_redis.Connection.create(host='localhost', port=6379)
-        connection = yield from asyncio_redis.Pool.create(host='localhost', port=6379, poolsize=50)
+        connection = yield From(asyncio_redis.Pool.create(host='localhost', port=6379, poolsize=50))
 
         try:
             # === Benchmark 1 ==
@@ -26,7 +28,7 @@ if __name__ == '__main__':
 
             # Do 10,000 set requests
             for i in range(10 * 1000):
-                yield from connection.set('key', 'value') # By using yield from here, we wait for the answer.
+                yield From(connection.set('key', 'value')) # By using yield from here, we wait for the answer.
 
             print('Done. Duration=', time.time() - start)
             print()
@@ -39,7 +41,7 @@ if __name__ == '__main__':
 
             # Do 10,000 set requests
             futures = [ asyncio.Task(connection.set('key', 'value')) for x in range(10 * 1000) ]
-            yield from asyncio.gather(*futures)
+            yield From(asyncio.gather(*futures))
 
             print('Done. Duration=', time.time() - start)
 

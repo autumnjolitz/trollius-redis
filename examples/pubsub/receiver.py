@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import trollius as asyncio
 from trollius import From
 import logging

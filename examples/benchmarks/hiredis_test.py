@@ -3,17 +3,12 @@
 Compare how fast HiRedisProtocol is compared to the pure Python implementation
 for a few different benchmarks.
 """
+from __future__ import print_function
 import trollius as asyncio
 from trollius import From
 import asyncio_redis
 import time
-import logging
-logging.basicConfig(level=logging.DEBUG)
-# from asyncio_redis.log import logger
-# logger.setLevel(logging.DEBUG)
-# hd = logging.StreamHandler()
-# hd.setLevel(logging.DEBUG)
-# logger.addHandler(hd)
+
 try:
     import hiredis
 except ImportError:
@@ -38,10 +33,7 @@ def test2(connection):
 
     yield From(connection.delete(['key']))
     yield From(connection.hmset('key', d))
-    result = yield From(connection.hgetall('key'))
-    for i in result:
-        print(i)
-        # print(yield From(i))
+    result = yield From(connection.hgetall_asdict('key'))
     assert result == d
 
 
@@ -103,8 +95,8 @@ benchmarks = [
 
 
 def run():
-    # connection = yield From(
-    #     asyncio_redis.Connection.create(host='localhost', port=6379))
+    connection = yield From(
+        asyncio_redis.Connection.create(host='localhost', port=6379))
     if hiredis:
         hiredis_connection = yield From(
             asyncio_redis.Connection.create(
@@ -115,10 +107,10 @@ def run():
             print('%ix %s' % (count, f.__doc__))
 
             # Benchmark without hredis
-            # start = time.time()
-            # for i in xrange(count):
-            #     yield From(f(connection))
-            # print('      Pure Python: ', time.time() - start)
+            start = time.time()
+            for i in xrange(count):
+                yield From(f(connection))
+            print('      Pure Python: ', time.time() - start)
 
             # Benchmark with hredis
             if hiredis:
@@ -130,7 +122,7 @@ def run():
             else:
                 print('      hiredis:     (not available)')
     finally:
-        # connection.close()
+        connection.close()
         if hiredis:
             hiredis_connection.close()
 

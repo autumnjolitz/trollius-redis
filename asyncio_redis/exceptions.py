@@ -30,7 +30,7 @@ class TransactionError(Error):
 class NotConnectedError(Error):
     """ Protocol is not connected. """
     def __init__(self, message='Not connected'):
-        super().__init__(message)
+        super(NotConnectedError, self).__init__(message)
 
 
 class TimeoutError(Error):

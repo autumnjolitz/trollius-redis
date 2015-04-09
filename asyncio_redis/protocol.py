@@ -15,7 +15,8 @@ except ImportError:
 
 from collections import deque
 from functools import wraps
-from inspect import getfullargspec, formatargspec, getcallargs
+from inspect import formatargspec, getcallargs
+from inspect import getargspec as getfullargspec
 
 from .encoders import BaseEncoder, UTF8Encoder
 from .exceptions import (
@@ -459,10 +460,12 @@ class CommandCreator(object):
     @property
     def return_type(self):
         """ Return type as defined in the method's annotation. """
+        return NoneType
         return self.specs.annotations.get('return', None)
 
     @property
     def params(self):
+        return {}
         return {k: v for k, v in self.specs.annotations.items()
                 if k != 'return'}
 
@@ -814,7 +817,7 @@ class RedisProtocol(asyncio.Protocol):
     __metaclass__ = _RedisProtocolMeta
 
     def __init__(self, password=None, db=0, encoder=None,
-                 connection_lost_callback=None, enable_typechecking=True,
+                 connection_lost_callback=None, enable_typechecking=False,
                  loop=None):
         if encoder is None:
             encoder = UTF8Encoder()

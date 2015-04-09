@@ -41,7 +41,7 @@ Installation
 
 .. code::
 
-    pip install git+https://github.com/benjolitz/asyncio-redis.git
+    pip install git+https://github.com/benjolitz/asyncio-redis.git@trollius_compat
 
 Documentation
 -------------

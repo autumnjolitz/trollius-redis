@@ -3,7 +3,7 @@ from .protocol import RedisProtocol, _all_commands
 import trollius as asyncio
 from trollius import From, Return
 import logging
-
+import urlparse
 
 __all__ = ('Connection', )
 
@@ -45,7 +45,6 @@ class Connection(object):
         """
         assert port >= 0, "Unexpected port value: %r" % (port, )
         connection = cls()
-
         connection.host = host
         connection.port = port
         connection._loop = loop or asyncio.get_event_loop()
@@ -69,6 +68,56 @@ class Connection(object):
         yield From(connection._reconnect())
 
         raise Return(connection)
+
+    @staticmethod
+    @asyncio.coroutine
+    def from_uri(uri):
+        kwargs = {}
+        parsed_uri = urlparse.urlparse(uri)
+        if parsed_uri.scheme.lower().encode('utf8') == b'unix':
+            kwargs['host'] = parsed_uri.path
+            params = urlparse.parse_qs(parsed_uri.query)
+            if 'db' in params:
+                kwargs['db'] = int(params['db'][0], 10)
+            if '@' in parsed_uri.netloc:
+                password = parsed_uri.netloc[:parsed_uri.netloc.index('@')]
+                if password:
+                    kwargs['password'] = password
+            kwargs['port'] = 0
+        elif parsed_uri.scheme.lower().encode('utf8').endswith(b'redis'):
+            if parsed_uri.scheme.lower().encode('utf8').endswith('ss'):
+                raise NotImplementedError("SSL not supported (yet)")
+            db = parsed_uri.path
+            if len(db) > 1:
+                try:
+                    db = int(db[1:], 10)
+                except ValueError:
+                    raise ValueError("Illegal db specification")
+                else:
+                    kwargs['db'] = db
+            if '@' in parsed_uri.netloc:
+                password, host_port = parsed_uri.netloc.split('@', 1)
+            else:
+                password = None
+                host_port = parsed_uri.netloc
+            if ':' in host_port:
+                host, port = host_port.split(':')
+                kwargs['host'] = host
+                kwargs['port'] = int(port, 10)
+            else:
+                kwargs['host'] = host_port
+                kwargs['port'] = 6379
+            if password:
+                if password.startswith('[:'):
+                    password = password[2:]
+                if password.endswith(']'):
+                    password = password[:-1]
+                kwargs['password'] = password
+        for key in kwargs:
+            if isinstance(kwargs[key], unicode):
+                kwargs[key] = kwargs[key].encode('utf8')
+        conn = yield From(Connection.create(**kwargs))
+        raise Return(conn)
 
     @property
     def transport(self):

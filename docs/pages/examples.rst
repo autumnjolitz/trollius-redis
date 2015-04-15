@@ -3,24 +3,24 @@
 Examples
 =========
 
-The :class:`Connection <asyncio_redis.Connection>` class
+The :class:`Connection <trollius_redis.Connection>` class
 --------------------------------------------------------
 
-A :class:`Connection <asyncio_redis.Connection>` instance will take care of the
+A :class:`Connection <trollius_redis.Connection>` instance will take care of the
 connection and will automatically reconnect, using a new transport when the
 connection drops. This connection class also acts as a proxy to at 
-:class:`RedisProtocol <asyncio_redis.RedisProtocol>` instance; any Redis
+:class:`RedisProtocol <trollius_redis.RedisProtocol>` instance; any Redis
 command of the protocol can be called directly at the connection.
 
 .. code:: python
 
     import asyncio
-    import asyncio_redis
+    import trollius_redis
 
     @asyncio.coroutine
     def example():
         # Create Redis connection
-        connection = yield from asyncio_redis.Connection.create(host='localhost', port=6379)
+        connection = yield from trollius_redis.Connection.create(host='localhost', port=6379)
 
         # Set a key
         yield from connection.set('my_key', 'my_value')
@@ -40,7 +40,7 @@ Connection pooling
 ------------------
 
 Requests will automatically be distributed among all connections in a
-:class:`Pool <asyncio_redis.Pool>`. If a connection is blocking because of
+:class:`Pool <trollius_redis.Pool>`. If a connection is blocking because of
 --for instance-- a blocking rpop, another connection will be used for new
 commands.
 
@@ -49,12 +49,12 @@ commands.
 .. code:: python
 
     import asyncio
-    import asyncio_redis
+    import trollius_redis
 
     @asyncio.coroutine
     def example():
         # Create Redis connection
-        connection = yield from asyncio_redis.Pool.create(host='localhost', port=6379, poolsize=10)
+        connection = yield from trollius_redis.Pool.create(host='localhost', port=6379, poolsize=10)
 
         # Set a key
         yield from connection.set('my_key', 'my_value')
@@ -67,22 +67,22 @@ Transactions
 ------------
 
 A transaction can be started by calling :func:`multi
-<asyncio_redis.RedisProtocol.multi>`. This returns a :class:`Transaction
-<asyncio_redis.Transaction>` instance which is in fact just a proxy to the
-:class:`RedisProtocol <asyncio_redis.RedisProtocol>`, except that every Redis
+<trollius_redis.RedisProtocol.multi>`. This returns a :class:`Transaction
+<trollius_redis.Transaction>` instance which is in fact just a proxy to the
+:class:`RedisProtocol <trollius_redis.RedisProtocol>`, except that every Redis
 method of the protocol now became a coroutine that returns a future. The
 results of these futures can be retrieved after the transaction is commited
-with :func:`exec <asyncio_redis.Transaction.exec>`.
+with :func:`exec <trollius_redis.Transaction.exec>`.
 
 .. code:: python
 
     import asyncio
-    import asyncio_redis
+    import trollius_redis
 
     @asyncio.coroutine
     def example(loop):
         # Create Redis connection
-        connection = yield from asyncio_redis.Pool.create(host='localhost', port=6379, poolsize=10)
+        connection = yield from trollius_redis.Pool.create(host='localhost', port=6379, poolsize=10)
 
         # Create transaction
         transaction = yield from connection.multi()
@@ -110,19 +110,19 @@ Pubsub
 ------
 
 By calling :func:`start_subscribe
-<asyncio_redis.RedisProtocol.start_subscribe>` (either on the protocol, through
-the :class:`Connection <asyncio_redis.Connection>` class or through the :class:`Pool
-<asyncio_redis.Pool>` class), you can start a pubsub listener.
+<trollius_redis.RedisProtocol.start_subscribe>` (either on the protocol, through
+the :class:`Connection <trollius_redis.Connection>` class or through the :class:`Pool
+<trollius_redis.Pool>` class), you can start a pubsub listener.
 
 .. code:: python
 
     import asyncio
-    import asyncio_redis
+    import trollius_redis
 
     @asyncio.coroutine
     def example():
         # Create connection
-        connection = yield from asyncio_redis.Connection.create(host='localhost', port=6379)
+        connection = yield from trollius_redis.Connection.create(host='localhost', port=6379)
 
         # Create subscriber.
         subscriber = yield from connection.start_subscribe()
@@ -142,16 +142,16 @@ the :class:`Connection <asyncio_redis.Connection>` class or through the :class:`
 LUA Scripting
 -------------
 
-The :func:`register_script <asyncio_redis.RedisProtocol.register_script>`
+The :func:`register_script <trollius_redis.RedisProtocol.register_script>`
 function -- which can be used to register a LUA script -- returns a
-:class:`Script <asyncio_redis.Script>` instance. You can call its :func:`run
-<asyncio_redis.Script.run>` method to execute this script.
+:class:`Script <trollius_redis.Script>` instance. You can call its :func:`run
+<trollius_redis.Script.run>` method to execute this script.
 
 
 .. code:: python
 
     import asyncio
-    import asyncio_redis
+    import trollius_redis
 
     code = \
     """
@@ -162,7 +162,7 @@ function -- which can be used to register a LUA script -- returns a
 
     @asyncio.coroutine
     def example():
-        connection = yield from asyncio_redis.Connection.create(host='localhost', port=6379)
+        connection = yield from trollius_redis.Connection.create(host='localhost', port=6379)
 
         # Set a key
         yield from connection.set('my_key', '2')
@@ -183,23 +183,23 @@ Raw bytes or UTF-8
 ------------------
 
 The redis protocol only knows about bytes, but normally you want to use strings
-in your Python code. ``asyncio_redis`` is helpful and installs an encoder that
+in your Python code. ``trollius_redis`` is helpful and installs an encoder that
 does this conversion automatically, using the UTF-8 codec. However, sometimes
 you want to access raw bytes. This is possible by passing a
-:class:`BytesEncoder <asyncio_redis.encoders.BytesEncoder>` instance to the
+:class:`BytesEncoder <trollius_redis.encoders.BytesEncoder>` instance to the
 connection, pool or protocol.
 
 .. code:: python
 
     import asyncio
-    import asyncio_redis
+    import trollius_redis
 
-    from asyncio_redis.encoders import BytesEncoder
+    from trollius_redis.encoders import BytesEncoder
 
     @asyncio.coroutine
     def example():
         # Create Redis connection
-        connection = yield from asyncio_redis.Connection.create(host='localhost', port=6379, encoder=BytesEncoder())
+        connection = yield from trollius_redis.Connection.create(host='localhost', port=6379, encoder=BytesEncoder())
 
         # Set a key
         yield from connection.set(b'my_key', b'my_value')
@@ -212,10 +212,10 @@ Scanning for keys
 -----------------
 
 Redis has a few nice scanning utilities to discover keys in the database. They
-are rather low-level, but ``asyncio_redis`` exposes a simple
-:class:`~asyncio_redis.cursors.Cursor` class that allows you to iterate over
+are rather low-level, but ``trollius_redis`` exposes a simple
+:class:`~trollius_redis.cursors.Cursor` class that allows you to iterate over
 all the keys matching a certain pattern. Each call of the
-:func:`~asyncio_redis.cursors.Cursor.fetchone` coroutine will return the next
+:func:`~trollius_redis.cursors.Cursor.fetchone` coroutine will return the next
 match. You don't have have to worry about accessing the server every x pages.
 
 The following example will print all the keys in the database:
@@ -223,9 +223,9 @@ The following example will print all the keys in the database:
 .. code:: python
 
     import asyncio
-    import asyncio_redis
+    import trollius_redis
 
-    from asyncio_redis.encoders import BytesEncoder
+    from trollius_redis.encoders import BytesEncoder
 
     @asyncio.coroutine
     def example():
@@ -238,13 +238,13 @@ The following example will print all the keys in the database:
                 print(item)
 
 
-See the scanning utilities: :func:`~asyncio_redis.RedisProtocol.scan`,
-:func:`~asyncio_redis.RedisProtocol.sscan`,
-:func:`~asyncio_redis.RedisProtocol.hscan` and
-:func:`~asyncio_redis.RedisProtocol.zscan`
+See the scanning utilities: :func:`~trollius_redis.RedisProtocol.scan`,
+:func:`~trollius_redis.RedisProtocol.sscan`,
+:func:`~trollius_redis.RedisProtocol.hscan` and
+:func:`~trollius_redis.RedisProtocol.zscan`
 
 
-The :class:`RedisProtocol <asyncio_redis.RedisProtocol>` class
+The :class:`RedisProtocol <trollius_redis.RedisProtocol>` class
 --------------------------------------------------------------
 
 The most low level way of accessing the redis server through this library is
@@ -254,7 +254,7 @@ it as follows:
 .. code:: python
 
     import asyncio
-    import asyncio_redis
+    import trollius_redis
 
     @asyncio.coroutine
     def example():
@@ -262,7 +262,7 @@ it as follows:
 
         # Create Redis connection
         transport, protocol = yield from loop.create_connection(
-                    asyncio_redis.RedisProtocol, 'localhost', 6379)
+                    trollius_redis.RedisProtocol, 'localhost', 6379)
 
         # Set a key
         yield from protocol.set('my_key', 'my_value')
@@ -277,5 +277,5 @@ it as follows:
 
 .. note:: It is not recommended to use the Protocol class directly, because the
           low-level Redis implementation could change. Prefer the
-          :class:`Connection <asyncio_redis.Connection>` or :class:`Pool
-          <asyncio_redis.Pool>` class as demonstrated above if possible.
+          :class:`Connection <trollius_redis.Connection>` or :class:`Pool
+          <trollius_redis.Pool>` class as demonstrated above if possible.

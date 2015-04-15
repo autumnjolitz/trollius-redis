@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# asyncio_redis documentation build configuration file, created by
+# trollius_redis documentation build configuration file, created by
 # sphinx-quickstart on Thu Oct 31 08:50:13 2013.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -43,7 +43,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'asyncio_redis'
+project = u'trollius_redis'
 copyright = u'2013, Jonathan Slenders'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -183,7 +183,7 @@ html_static_path = ['_static']
 #html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'asyncio_redisdoc'
+htmlhelp_basename = 'trollius_redisdoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -202,7 +202,7 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'asyncio_redis.tex', u'asyncio\\_redis Documentation',
+  ('index', 'trollius_redis.tex', u'asyncio\\_redis Documentation',
    u'Jonathan Slenders', 'manual'),
 ]
 
@@ -232,7 +232,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'asyncio_redis', u'asyncio_redis Documentation',
+    ('index', 'trollius_redis', u'trollius_redis Documentation',
      [u'Jonathan Slenders'], 1)
 ]
 
@@ -246,8 +246,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'asyncio_redis', u'asyncio_redis Documentation',
-   u'Jonathan Slenders', 'asyncio_redis', 'One line description of project.',
+  ('index', 'trollius_redis', u'trollius_redis Documentation',
+   u'Jonathan Slenders', 'trollius_redis', 'One line description of project.',
    'Miscellaneous'),
 ]
 

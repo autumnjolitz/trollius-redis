@@ -3,136 +3,136 @@
 Reference
 =========
 
-You can either use the :class:`RedisProtocol <asyncio_redis.RedisProtocol>`
-class directly, use the :class:`Connection <asyncio_redis.Connection>` class,
-or use the :class:`Pool <asyncio_redis.Pool>` wrapper which also offers
+You can either use the :class:`RedisProtocol <trollius_redis.RedisProtocol>`
+class directly, use the :class:`Connection <trollius_redis.Connection>` class,
+or use the :class:`Pool <trollius_redis.Pool>` wrapper which also offers
 connection pooling.
 
 The Protocol
 ------------
 
-.. autoclass:: asyncio_redis.RedisProtocol
+.. autoclass:: trollius_redis.RedisProtocol
     :members:
     :undoc-members:
     :exclude-members: data_received, eof_received, connection_lost
 
-.. autoclass:: asyncio_redis.HiRedisProtocol
+.. autoclass:: trollius_redis.HiRedisProtocol
     :members:
 
 
 Encoders
 ----------
 
-.. autoclass:: asyncio_redis.encoders.BaseEncoder
+.. autoclass:: trollius_redis.encoders.BaseEncoder
     :members:
     :undoc-members:
 
-.. autoclass:: asyncio_redis.encoders.UTF8Encoder
+.. autoclass:: trollius_redis.encoders.UTF8Encoder
     :members:
 
-.. autoclass:: asyncio_redis.encoders.BytesEncoder
+.. autoclass:: trollius_redis.encoders.BytesEncoder
     :members:
 
 
 Connection
 ----------
 
-.. autoclass:: asyncio_redis.Connection
+.. autoclass:: trollius_redis.Connection
     :members:
     :exclude-members: register_script
 
 Connection pool
 ---------------
 
-.. autoclass:: asyncio_redis.Pool
+.. autoclass:: trollius_redis.Pool
     :members:
 
 Command replies
 ---------------
 
-.. autoclass:: asyncio_redis.replies.StatusReply
+.. autoclass:: trollius_redis.replies.StatusReply
     :members:
 
-.. autoclass:: asyncio_redis.replies.DictReply
+.. autoclass:: trollius_redis.replies.DictReply
     :members:
 
-.. autoclass:: asyncio_redis.replies.ListReply
+.. autoclass:: trollius_redis.replies.ListReply
     :members:
 
-.. autoclass:: asyncio_redis.replies.SetReply
+.. autoclass:: trollius_redis.replies.SetReply
     :members:
 
-.. autoclass:: asyncio_redis.replies.ZRangeReply
+.. autoclass:: trollius_redis.replies.ZRangeReply
     :members:
 
-.. autoclass:: asyncio_redis.replies.PubSubReply
+.. autoclass:: trollius_redis.replies.PubSubReply
     :members:
 
-.. autoclass:: asyncio_redis.replies.BlockingPopReply
+.. autoclass:: trollius_redis.replies.BlockingPopReply
     :members:
 
-.. autoclass:: asyncio_redis.replies.InfoReply
+.. autoclass:: trollius_redis.replies.InfoReply
     :members:
 
-.. autoclass:: asyncio_redis.replies.ClientListReply
+.. autoclass:: trollius_redis.replies.ClientListReply
     :members:
 
 
 Cursors
 -------
 
-.. autoclass:: asyncio_redis.cursors.Cursor
+.. autoclass:: trollius_redis.cursors.Cursor
     :members:
 
-.. autoclass:: asyncio_redis.cursors.SetCursor
+.. autoclass:: trollius_redis.cursors.SetCursor
     :members:
 
-.. autoclass:: asyncio_redis.cursors.DictCursor
+.. autoclass:: trollius_redis.cursors.DictCursor
     :members:
 
-.. autoclass:: asyncio_redis.cursors.ZCursor
+.. autoclass:: trollius_redis.cursors.ZCursor
     :members:
 
 
 Utils
 -----
 
-.. autoclass:: asyncio_redis.ZScoreBoundary
+.. autoclass:: trollius_redis.ZScoreBoundary
     :members:
 
-.. autoclass:: asyncio_redis.Transaction
+.. autoclass:: trollius_redis.Transaction
     :members:
 
-.. autoclass:: asyncio_redis.Subscription
+.. autoclass:: trollius_redis.Subscription
     :members:
 
-.. autoclass:: asyncio_redis.Script
+.. autoclass:: trollius_redis.Script
     :members:
 
-.. autoclass:: asyncio_redis.ZAggregate
+.. autoclass:: trollius_redis.ZAggregate
     :members:
 
 
 Exceptions
 ----------
 
-.. autoclass:: asyncio_redis.exceptions.TransactionError
+.. autoclass:: trollius_redis.exceptions.TransactionError
     :members:
 
-.. autoclass:: asyncio_redis.exceptions.NotConnectedError
+.. autoclass:: trollius_redis.exceptions.NotConnectedError
     :members:
 
-.. autoclass:: asyncio_redis.exceptions.TimeoutError
+.. autoclass:: trollius_redis.exceptions.TimeoutError
     :members:
 
-.. autoclass:: asyncio_redis.exceptions.ConnectionLostError
+.. autoclass:: trollius_redis.exceptions.ConnectionLostError
     :members:
 
-.. autoclass:: asyncio_redis.exceptions.NoAvailableConnectionsInPoolError
+.. autoclass:: trollius_redis.exceptions.NoAvailableConnectionsInPoolError
     :members:
 
-.. autoclass:: asyncio_redis.exceptions.ScriptKilledError
+.. autoclass:: trollius_redis.exceptions.ScriptKilledError
     :members:
 
-.. autoclass:: asyncio_redis.exceptions.NoRunningScriptError
+.. autoclass:: trollius_redis.exceptions.NoRunningScriptError
     :members:

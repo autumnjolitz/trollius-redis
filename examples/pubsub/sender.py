@@ -2,7 +2,7 @@
 from __future__ import print_function
 import trollius as asyncio
 from trollius import From
-import asyncio_redis
+import trollius_redis
 import logging
 
 
@@ -16,20 +16,20 @@ if __name__ == '__main__':
     def run():
         # Create a new redis connection (this will also auto reconnect)
         connection = yield From(
-            asyncio_redis.Connection.create('localhost', 6379))
+            trollius_redis.Connection.create(u'localhost', 6379))
 
         try:
             while True:
                 # Get input (always use executor for blocking calls)
                 text = yield From(
-                    loop.run_in_executor(None, raw_input, 'Enter message: '))
+                    loop.run_in_executor(None, raw_input, u'Enter message: '))
 
                 # Publish value
                 try:
-                    yield From(connection.publish('our-channel', text))
-                    print('Published.')
-                except asyncio_redis.Error as e:
-                    print('Published failed', repr(e))
+                    yield From(connection.publish(u'our-channel', text))
+                    print(u'Published.')
+                except trollius_redis.Error as e:
+                    print(u'Published failed', repr(e))
 
         finally:
             connection.close()

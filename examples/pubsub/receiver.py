@@ -3,7 +3,7 @@ from __future__ import print_function
 import trollius as asyncio
 from trollius import From
 import logging
-import asyncio_redis
+import trollius_redis
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
@@ -15,18 +15,18 @@ if __name__ == '__main__':
     def run():
         # Create a new redis connection (this will also auto reconnect)
         connection = yield From(
-            asyncio_redis.Connection.create('localhost', 6379))
+            trollius_redis.Connection.create(u'localhost', 6379))
 
         try:
             # Subscribe to a channel.
             subscriber = yield From(connection.start_subscribe())
-            yield From(subscriber.subscribe(['our-channel']))
+            yield From(subscriber.subscribe([u'our-channel']))
 
             # Print published values in a while/true loop.
             while True:
                 reply = yield From(subscriber.next_published())
                 print(
-                    'Received: ', repr(reply.value), 'on channel',
+                    u'Received: ', repr(reply.value), 'on channel',
                     reply.channel)
 
         finally:

@@ -5,7 +5,8 @@ from .protocol import RedisProtocol, Script
 from functools import wraps
 import trollius as asyncio
 from trollius import From, Return
-
+import six
+range = six.moves.range
 
 __all__ = ('Pool', )
 
@@ -42,13 +43,13 @@ class Pool(object):
         :type db: int
         :param encoder: Encoder to use for encoding to or decoding from redis
                         bytes to a native type.
-        :type encoder: :class:`~asyncio_redis.encoders.BaseEncoder` instance.
+        :type encoder: :class:`~trollius_redis.encoders.BaseEncoder` instance.
         :param poolsize: The number of parallel connections.
         :type poolsize: int
         :param auto_reconnect: Enable auto reconnect
         :type auto_reconnect: bool
         :param loop: (optional) asyncio event loop.
-        :type protocol_class: :class:`~asyncio_redis.RedisProtocol`
+        :type protocol_class: :class:`~trollius_redis.RedisProtocol`
         :param protocol_class: (optional) redis protocol implementation
         """
         self = cls()

@@ -7,7 +7,9 @@ from __future__ import print_function
 import trollius
 from trollius import From
 import logging
-import asyncio_redis
+import trollius_redis
+import six
+range = six.moves.range
 
 if __name__ == '__main__':
     loop = trollius.get_event_loop()
@@ -17,7 +19,7 @@ if __name__ == '__main__':
     logging.getLogger().setLevel(logging.INFO)
 
     def run():
-        connection = yield From(asyncio_redis.Connection.create(
+        connection = yield From(trollius_redis.Connection.create(
             host='localhost', port=6379))
 
         # Create a set that contains a million items
@@ -30,13 +32,13 @@ if __name__ == '__main__':
         # that this needs many IP packets, in order to send or receive this.
         long_string = 'abcdefghij' * 1000  # len=10k
 
-        for prefix in xrange(10):
+        for prefix in range(10):
             print('Callidng redis sadd:', prefix, '/10')
             yield From(
                 connection.sadd(
                     'my-big-set',
                     ('%s-%s-%s' % (prefix, i, long_string)
-                    for i in xrange(10 * 1000))))
+                    for i in range(10 * 1000))))
         print('Done\n')
 
         # Now stream the values from the database:

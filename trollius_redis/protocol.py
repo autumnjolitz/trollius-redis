@@ -6,7 +6,8 @@ from trollius import From, Return
 from trollius.futures import Future
 from trollius.queues import Queue
 from trollius.streams import StreamReader
-range = xrange
+import six
+range = six.moves.range
 
 try:
     import hiredis
@@ -582,54 +583,54 @@ class CommandCreator(object):
             try:
                 return {
                     BlockingPopReply: (
-                        ":class:`BlockingPopReply <asyncio_redis.replies."
+                        ":class:`BlockingPopReply <trollius_redis.replies."
                         "BlockingPopReply>`"),
                     ConfigPairReply: (
-                        ":class:`ConfigPairReply <asyncio_redis.replies."
+                        ":class:`ConfigPairReply <trollius_redis.replies."
                         "ConfigPairReply>`"),
                     DictReply: (
-                        ":class:`DictReply <asyncio_redis.replies."
+                        ":class:`DictReply <trollius_redis.replies."
                         "DictReply>`"),
                     InfoReply: (
-                        ":class:`InfoReply <asyncio_redis.replies."
+                        ":class:`InfoReply <trollius_redis.replies."
                         "InfoReply>`"),
                     ClientListReply: (
-                        ":class:`InfoReply <asyncio_redis.replies."
+                        ":class:`InfoReply <trollius_redis.replies."
                         "ClientListReply>`"),
                     ListReply: (
-                        ":class:`ListReply <asyncio_redis.replies.ListReply>`"
+                        ":class:`ListReply <trollius_redis.replies.ListReply>`"
                     ),
                     MultiBulkReply: (
-                        ":class:`MultiBulkReply <asyncio_redis.replies."
+                        ":class:`MultiBulkReply <trollius_redis.replies."
                         "MultiBulkReply>`"),
                     NativeType: (
                         "Native Python type, as defined by :attr:`"
-                        "~asyncio_redis.encoders.BaseEncoder.native_type`"),
+                        "~trollius_redis.encoders.BaseEncoder.native_type`"),
                     NoneType: ("None"),
                     SetReply: (
-                        ":class:`SetReply <asyncio_redis.replies.SetReply>`"),
+                        ":class:`SetReply <trollius_redis.replies.SetReply>`"),
                     StatusReply: (
-                        ":class:`StatusReply <asyncio_redis."
+                        ":class:`StatusReply <trollius_redis."
                         "replies.StatusReply>`"),
                     ZRangeReply: (
-                        ":class:`ZRangeReply <asyncio_redis."
+                        ":class:`ZRangeReply <trollius_redis."
                         "replies.ZRangeReply>`"),
                     ZScoreBoundary: (
-                        ":class:`ZScoreBoundary <asyncio_redis."
+                        ":class:`ZScoreBoundary <trollius_redis."
                         "replies.ZScoreBoundary>`"),
                     EvalScriptReply: (
-                        ":class:`EvalScriptReply <asyncio_redis."
+                        ":class:`EvalScriptReply <trollius_redis."
                         "replies.EvalScriptReply>`"),
                     Cursor: (
-                        ":class:`Cursor <asyncio_redis.cursors.Cursor>`"),
+                        ":class:`Cursor <trollius_redis.cursors.Cursor>`"),
                     SetCursor: (
-                        ":class:`SetCursor <asyncio_redis."
+                        ":class:`SetCursor <trollius_redis."
                         "cursors.SetCursor>`"),
                     DictCursor: (
-                        ":class:`DictCursor <asyncio_redis."
+                        ":class:`DictCursor <trollius_redis."
                         "cursors.DictCursor>`"),
                     ZCursor: (
-                        ":class:`ZCursor <asyncio_redis.cursors.ZCursor>`"),
+                        ":class:`ZCursor <trollius_redis.cursors.ZCursor>`"),
                     _ScanPart: ":class:`_ScanPart",
                     int: 'int',
                     bool: 'bool',
@@ -644,9 +645,9 @@ class CommandCreator(object):
 
                     # XXX: Because of circulare references, we cannot use the
                     # real types here.
-                    'Transaction': ":class:`asyncio_redis.Transaction`",
-                    'Subscription': ":class:`asyncio_redis.Subscription`",
-                    'Script': ":class:`~asyncio_redis.Script`",
+                    'Transaction': ":class:`trollius_redis.Transaction`",
+                    'Subscription': ":class:`trollius_redis.Subscription`",
+                    'Script': ":class:`~trollius_redis.Script`",
                 }[type_]
             except KeyError:
                 if isinstance(type_, ListOf):
@@ -834,8 +835,8 @@ class RedisProtocol(asyncio.Protocol):
     :type password: Native Python type as defined by the ``encoder`` parameter
     :param encoder: Encoder to use for encoding to or decoding from redis bytes
                     to a native type.
-                    (Defaults to :class:`~asyncio_redis.encoders.UTF8Encoder`)
-    :type encoder: :class:`~asyncio_redis.encoders.BaseEncoder` instance.
+                    (Defaults to :class:`~trollius_redis.encoders.UTF8Encoder`)
+    :type encoder: :class:`~trollius_redis.encoders.BaseEncoder` instance.
     :param db: Redis database
     :type db: int
     :param enable_typechecking: When ``True``, check argument types for all
@@ -1468,7 +1469,7 @@ class RedisProtocol(asyncio.Protocol):
         Find all keys matching the given pattern.
 
         .. note:: Also take a look at
-        :func:`~asyncio_redis.RedisProtocol.scan`.
+        :func:`~trollius_redis.RedisProtocol.scan`.
         """
         return self._query(b'keys', self.encode_from_native(pattern))
 
@@ -1727,7 +1728,7 @@ class RedisProtocol(asyncio.Protocol):
     def blpop(self, keys, timeout=0):
         """ Remove and get the first element in a list, or block until one is
         available.
-        This will raise :class:`~asyncio_redis.exceptions.TimeoutError` when
+        This will raise :class:`~trollius_redis.exceptions.TimeoutError` when
         the timeout was exceeded and Redis returns `None`. """
         return self._blocking_pop(b'blpop', keys, timeout=timeout)
 
@@ -1736,7 +1737,7 @@ class RedisProtocol(asyncio.Protocol):
     def brpop(self, keys, timeout=0):
         """ Remove and get the last element in a list, or block until one is
         available.
-        This will raise :class:`~asyncio_redis.exceptions.TimeoutError` when
+        This will raise :class:`~trollius_redis.exceptions.TimeoutError` when
         the timeout was exceeded and Redis returns `None`. """
         return self._blocking_pop(b'brpop', keys, timeout=timeout)
 
@@ -2118,7 +2119,7 @@ class RedisProtocol(asyncio.Protocol):
                 result = yield from subscription.next_published()
                 print(result)
 
-        :returns: :class:`~asyncio_redis.Subscription`
+        :returns: :class:`~trollius_redis.Subscription`
         """
         # (Make coroutine. @asyncio.coroutine breaks documentation. It uses
         # @functools.wraps to make a generator for this function. But _command
@@ -2398,7 +2399,7 @@ class RedisProtocol(asyncio.Protocol):
     def script_kill(self):
         """
         Kill the script currently in execution.  This raises
-        :class:`~asyncio_redis.exceptions.NoRunningScriptError` when there are
+        :class:`~trollius_redis.exceptions.NoRunningScriptError` when there are
         no scripts running.
         """
         try:
@@ -2419,7 +2420,7 @@ class RedisProtocol(asyncio.Protocol):
 
         The return type/value depends on the script.
 
-        This will raise a :class:`~asyncio_redis.exceptions.ScriptKilledError`
+        This will raise a :class:`~trollius_redis.exceptions.ScriptKilledError`
         exception if the script was killed.
         """
         if not keys:
@@ -2467,9 +2468,9 @@ class RedisProtocol(asyncio.Protocol):
             cursor = yield from protocol.scan(match='*')
             items = yield from cursor.fetchall()
 
-        Also see: :func:`~asyncio_redis.RedisProtocol.sscan`,
-        :func:`~asyncio_redis.RedisProtocol.hscan` and
-        :func:`~asyncio_redis.RedisProtocol.zscan`
+        Also see: :func:`~trollius_redis.RedisProtocol.sscan`,
+        :func:`~trollius_redis.RedisProtocol.hscan` and
+        :func:`~trollius_redis.RedisProtocol.zscan`
 
         Redis reference: http://redis.io/commands/scan
         """
@@ -2495,7 +2496,7 @@ class RedisProtocol(asyncio.Protocol):
         """
         Incrementally iterate set elements
 
-        Also see: :func:`~asyncio_redis.RedisProtocol.scan`
+        Also see: :func:`~trollius_redis.RedisProtocol.scan`
         """
         if False:
             yield
@@ -2512,7 +2513,7 @@ class RedisProtocol(asyncio.Protocol):
     def hscan(self, key, match='*'):
         """
         Incrementally iterate hash fields and associated values
-        Also see: :func:`~asyncio_redis.RedisProtocol.scan`
+        Also see: :func:`~trollius_redis.RedisProtocol.scan`
         """
         if False:
             yield
@@ -2529,7 +2530,7 @@ class RedisProtocol(asyncio.Protocol):
     def zscan(self, key, match='*'):
         """
         Incrementally iterate sorted sets elements and associated scores
-        Also see: :func:`~asyncio_redis.RedisProtocol.scan`
+        Also see: :func:`~trollius_redis.RedisProtocol.scan`
         """
         if False:
             yield
@@ -2571,7 +2572,7 @@ class RedisProtocol(asyncio.Protocol):
             result1 = yield from f1
             result2 = yield from f2
 
-        :returns: A :class:`asyncio_redis.Transaction` instance.
+        :returns: A :class:`trollius_redis.Transaction` instance.
         """
         if (self._in_transaction):
             raise Error('Multi calls can not be nested.')
@@ -2678,7 +2679,7 @@ class Script(object):
             # If the LUA script returns something, retrieve the return value
             result = yield from script_reply.return_value()
 
-        This will raise a :class:`~asyncio_redis.exceptions.ScriptKilledError`
+        This will raise a :class:`~trollius_redis.exceptions.ScriptKilledError`
         exception if the script was killed.
         """
         return self.get_evalsha_func()(self.sha, keys, args)
@@ -2725,7 +2726,7 @@ class Transaction(object):
         """
         Execute transaction.
 
-        This can raise a :class:`~asyncio_redis.exceptions.TransactionError`
+        This can raise a :class:`~trollius_redis.exceptions.TransactionError`
         when the transaction fails.
         """
         return self._protocol._exec()
@@ -2768,7 +2769,7 @@ class Subscription(object):
         returns it.
 
         :returns: instance of :class:`PubSubReply
-        <asyncio_redis.replies.PubSubReply>`
+        <trollius_redis.replies.PubSubReply>`
         """
         r = yield From(self._messages_queue.get())
         raise Return(r)

@@ -33,7 +33,7 @@ class DictReply:
     Container for a dict reply.
 
     The content can be retrieved by calling
-    :func:`~asyncio_redis.replies.DictReply.asdict` which returns a Python
+    :func:`~trollius_redis.replies.DictReply.asdict` which returns a Python
     dictionary. Or by iterating over it:
 
     ::
@@ -89,7 +89,7 @@ class SetReply:
     """
     Redis set result.
     The content can be retrieved by calling
-    :func:`~asyncio_redis.replies.SetReply.asset` or by iterating over it
+    :func:`~trollius_redis.replies.SetReply.asset` or by iterating over it
 
     ::
 
@@ -118,7 +118,7 @@ class ListReply:
     """
     Redis list result.
     The content can be retrieved by calling
-    :func:`~asyncio_redis.replies.ListReply.aslist` or by iterating over it
+    :func:`~trollius_redis.replies.ListReply.aslist` or by iterating over it
     or by iterating over it
 
     ::
@@ -146,8 +146,8 @@ class ListReply:
 
 class BlockingPopReply:
     """
-    :func:`~asyncio_redis.RedisProtocol.blpop` or
-    :func:`~asyncio_redis.RedisProtocol.brpop` reply
+    :func:`~trollius_redis.RedisProtocol.blpop` or
+    :func:`~trollius_redis.RedisProtocol.brpop` reply
     """
     def __init__(self, list_name, value):
         self._list_name = list_name
@@ -169,7 +169,7 @@ class BlockingPopReply:
 
 
 class ConfigPairReply:
-    """ :func:`~asyncio_redis.RedisProtocol.config_get` reply. """
+    """ :func:`~trollius_redis.RedisProtocol.config_get` reply. """
     def __init__(self, parameter, value):
         self._paramater = parameter
         self._value = value
@@ -190,13 +190,13 @@ class ConfigPairReply:
 
 
 class InfoReply:
-    """ :func:`~asyncio_redis.RedisProtocol.info` reply. """
+    """ :func:`~trollius_redis.RedisProtocol.info` reply. """
     def __init__(self, data):
         self._data = data  # TODO: implement parser logic
 
 
 class ClientListReply:
-    """ :func:`~asyncio_redis.RedisProtocol.client_list` reply. """
+    """ :func:`~trollius_redis.RedisProtocol.client_list` reply. """
     def __init__(self, data):
         self._data = data  # TODO: implement parser logic
 
@@ -234,7 +234,7 @@ class PubSubReply:
 
 class EvalScriptReply:
     """
-    :func:`~asyncio_redis.RedisProtocol.evalsha` reply.
+    :func:`~trollius_redis.RedisProtocol.evalsha` reply.
 
     Lua scripts can return strings/bytes (NativeType), but also ints, lists or
     even nested data structures.
@@ -249,7 +249,7 @@ class EvalScriptReply:
         Coroutine that returns a Python representation of the script's return
         value.
         """
-        from asyncio_redis.protocol import MultiBulkReply
+        from trollius_redis.protocol import MultiBulkReply
 
         @asyncio.coroutine
         def decode(obj):

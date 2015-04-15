@@ -85,17 +85,17 @@ qthelp:
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in $(BUILDDIR)/qthelp, like this:"
-	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/asyncio_redis.qhcp"
+	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/trollius_redis.qhcp"
 	@echo "To view the help file:"
-	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/asyncio_redis.qhc"
+	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/trollius_redis.qhc"
 
 devhelp:
 	$(SPHINXBUILD) -b devhelp $(ALLSPHINXOPTS) $(BUILDDIR)/devhelp
 	@echo
 	@echo "Build finished."
 	@echo "To view the help file:"
-	@echo "# mkdir -p $$HOME/.local/share/devhelp/asyncio_redis"
-	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/asyncio_redis"
+	@echo "# mkdir -p $$HOME/.local/share/devhelp/trollius_redis"
+	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/trollius_redis"
 	@echo "# devhelp"
 
 epub:

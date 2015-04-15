@@ -380,7 +380,8 @@ class PostProcessors(object):
     @staticmethod
     @asyncio.coroutine
     def bytes_to_status_reply(protocol, result):
-        assert isinstance(result, bytes)
+        assert isinstance(result, bytes), \
+            "Result is not bytes. Is {0}".format(type(result))
         return StatusReply(result.decode('utf-8'))
 
     @staticmethod
@@ -1234,6 +1235,8 @@ class RedisProtocol(asyncio.Protocol):
     # Strings
 
     @_query_command
+    @return_type(NoneType)
+    @return_type(StatusReply)
     def set(self, key, value,
             expire=None, pexpire=None,
             only_if_not_exists=False, only_if_exists=False):
@@ -1797,8 +1800,12 @@ class RedisProtocol(asyncio.Protocol):
         """
         data = []
         for k, score in values.items():
-            assert isinstance(k, self.native_type)
-            assert isinstance(score, (int, float))
+            assert isinstance(k, self.native_type), \
+                "Key in dictionary is {0}, not {1}".format(
+                    type(k), self.native_type)
+            assert isinstance(score, (long, int, float)), \
+                "Value in dictionary is not numeric, it is {0}".format(
+                    type(score))
 
             data.append(self._encode_float(score))
             data.append(self.encode_from_native(k))

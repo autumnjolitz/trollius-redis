@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from setuptools import setup
 from codecs import open
-install_requires = ['trollius']
+install_requires = ['trollius', 'six', 'mock']
 try:
     import __pypy__
     __pypy__

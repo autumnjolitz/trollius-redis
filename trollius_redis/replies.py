@@ -13,7 +13,7 @@ __all__ = (
 )
 
 
-class StatusReply:
+class StatusReply(object):
     """
     Wrapper for Redis status replies.
     (for messages like OK, QUEUED, etc...)
@@ -25,10 +25,13 @@ class StatusReply:
         return 'StatusReply(status=%r)' % self.status
 
     def __eq__(self, other):
-        return self.status == other.status
+        try:
+            return self.status == other.status
+        except:
+            raise ValueError("Cannot compare StatusReply with type {0}".format(type(other)))
 
 
-class DictReply:
+class DictReply(object):
     """
     Container for a dict reply.
 
@@ -85,7 +88,7 @@ class ZRangeReply(DictReply):
         return key, float(value)
 
 
-class SetReply:
+class SetReply(object):
     """
     Redis set result.
     The content can be retrieved by calling
@@ -114,7 +117,7 @@ class SetReply:
         return 'SetReply(length=%r)' % (self._result.count)
 
 
-class ListReply:
+class ListReply(object):
     """
     Redis list result.
     The content can be retrieved by calling
@@ -144,7 +147,7 @@ class ListReply:
         return 'ListReply(length=%r)' % (self._result.count, )
 
 
-class BlockingPopReply:
+class BlockingPopReply(object):
     """
     :func:`~trollius_redis.RedisProtocol.blpop` or
     :func:`~trollius_redis.RedisProtocol.brpop` reply
@@ -168,7 +171,7 @@ class BlockingPopReply:
             self.list_name, self.value)
 
 
-class ConfigPairReply:
+class ConfigPairReply(object):
     """ :func:`~trollius_redis.RedisProtocol.config_get` reply. """
     def __init__(self, parameter, value):
         self._paramater = parameter
@@ -189,19 +192,19 @@ class ConfigPairReply:
             self.parameter, self.value)
 
 
-class InfoReply:
+class InfoReply(object):
     """ :func:`~trollius_redis.RedisProtocol.info` reply. """
     def __init__(self, data):
         self._data = data  # TODO: implement parser logic
 
 
-class ClientListReply:
+class ClientListReply(object):
     """ :func:`~trollius_redis.RedisProtocol.client_list` reply. """
     def __init__(self, data):
         self._data = data  # TODO: implement parser logic
 
 
-class PubSubReply:
+class PubSubReply(object):
     """ Received pubsub message. """
     def __init__(self, channel, value, pattern=None):
         self._channel = channel
@@ -232,7 +235,7 @@ class PubSubReply:
                 self._pattern == other._pattern)
 
 
-class EvalScriptReply:
+class EvalScriptReply(object):
     """
     :func:`~trollius_redis.RedisProtocol.evalsha` reply.
 

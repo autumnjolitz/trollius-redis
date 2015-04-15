@@ -515,7 +515,8 @@ class CommandCreator(object):
     def params(self):
         types = getattr(self.method, 'input_types', None)
         if types:
-            return {k: v for k, v in zip(self.specs.args, types)}
+            return {k: v for k, v in zip(
+                [x for x in self.specs.args if x != 'self'], types)}
         return {}
         # return {k: v for k, v in self.specs.annotations.items()
         #         if k != 'return'}
@@ -556,6 +557,7 @@ class CommandCreator(object):
                             real_type = self.get_real_type(
                                 protocol, params[name])
                             if not isinstance(value, real_type):
+                                print(params[name], name)
                                 raise TypeError(
                                     'RedisProtocol.%s received %r, expected %r'
                                     % (self.method.__name__,
@@ -1624,13 +1626,13 @@ class RedisProtocol(asyncio.Protocol):
             *map(self.encode_from_native, keys))
 
     @_query_command
-    @return_type(SetReply)
+    @typedef(ListOf(NativeType), return_type=SetReply)
     def sdiff(self, keys):
         """ Subtract multiple sets """
         return self._query(b'sdiff', *map(self.encode_from_native, keys))
 
     @_query_command
-    @return_type(SetReply)
+    @typedef(NativeType, ListOf(NativeType), return_type=int)
     def sdiffstore(self, destination, keys):
         """ Subtract multiple sets and store the resulting set in a key """
         return self._query(
@@ -1638,13 +1640,13 @@ class RedisProtocol(asyncio.Protocol):
             *map(self.encode_from_native, keys))
 
     @_query_command
-    @return_type(SetReply)
+    @typedef(ListOf(NativeType), return_type=SetReply)
     def sunion(self, keys):
         """ Add multiple sets """
         return self._query(b'sunion', *map(self.encode_from_native, keys))
 
     @_query_command
-    @return_type(SetReply)
+    @typedef(NativeType, ListOf(NativeType), return_type=int)
     def sunionstore(self, destination, keys):
         """ Add multiple sets and store the resulting set in a key """
         return self._query(
@@ -1652,7 +1654,7 @@ class RedisProtocol(asyncio.Protocol):
             *map(self.encode_from_native, keys))
 
     @_query_command
-    @return_type(int)
+    @typedef(NativeType, NativeType, NativeType, return_type=int)
     def smove(self, source, destination, value):
         """ Move a member from one set to another """
         return self._query(
@@ -1663,7 +1665,7 @@ class RedisProtocol(asyncio.Protocol):
     # List operations
 
     @_query_command
-    @return_type(int)
+    @typedef(NativeType, ListOf(NativeType), return_type=int)
     def lpush(self, key, values):
         """ Prepend one or multiple values to a list """
         return self._query(
@@ -1671,7 +1673,7 @@ class RedisProtocol(asyncio.Protocol):
             *map(self.encode_from_native, values))
 
     @_query_command
-    @return_type(int)
+    @typedef(NativeType, NativeType, return_type=int)
     def lpushx(self, key, value):
         """ Prepend a value to a list, only if the list exists """
         return self._query(
@@ -1679,7 +1681,7 @@ class RedisProtocol(asyncio.Protocol):
             self.encode_from_native(value))
 
     @_query_command
-    @return_type(int)
+    @typedef(NativeType, ListOf(NativeType), return_type=int)
     def rpush(self, key, values):
         """ Append one or multiple values to a list """
         return self._query(
@@ -1687,7 +1689,7 @@ class RedisProtocol(asyncio.Protocol):
             *map(self.encode_from_native, values))
 
     @_query_command
-    @return_type(int)
+    @typedef(NativeType, NativeType, return_type=int)
     def rpushx(self, key, value):
         """ Append a value to a list, only if the list exists """
         return self._query(
@@ -1695,13 +1697,13 @@ class RedisProtocol(asyncio.Protocol):
             self.encode_from_native(value))
 
     @_query_command
-    @return_type(int)
+    @typedef(NativeType, return_type=int)
     def llen(self, key):
         """ Returns the length of the list stored at key. """
         return self._query(b'llen', self.encode_from_native(key))
 
     @_query_command
-    @return_type(int)
+    @typedef(NativeType, int, return_type=int)
     def lrem(self, key, count=0, value=''):
         """ Remove elements from a list """
         return self._query(
@@ -1709,7 +1711,7 @@ class RedisProtocol(asyncio.Protocol):
             self._encode_int(count), self.encode_from_native(value))
 
     @_query_command
-    @return_type(ListReply)
+    @typedef(int, int, return_type=ListReply)
     def lrange(self, key, start=0, stop=-1):
         """ Get a range of elements from a list. """
         return self._query(
@@ -1717,7 +1719,7 @@ class RedisProtocol(asyncio.Protocol):
             self._encode_int(start), self._encode_int(stop))
 
     @_query_command
-    @return_type(StatusReply)
+    @typedef(NativeType, int, int, return_type=StatusReply)
     def ltrim(self, key, start=0, stop=-1):
         """ Trim a list to the specified range """
         return self._query(
@@ -1725,16 +1727,19 @@ class RedisProtocol(asyncio.Protocol):
             self._encode_int(start), self._encode_int(stop))
 
     @_query_command
+    @typedef(NativeType, return_type=(NativeType, NoneType))
     def lpop(self, key):
         """ Remove and get the first element in a list """
         return self._query(b'lpop', self.encode_from_native(key))
 
     @_query_command
+    @typedef(NativeType, return_type=(NativeType, NoneType))
     def rpop(self, key):
         """ Remove and get the last element in a list """
         return self._query(b'rpop', self.encode_from_native(key))
 
     @_query_command
+    @typedef(NativeType, NativeType, return_type=(NativeType, NoneType))
     def rpoplpush(self, source, destination):
         """ Remove the last element in a list, append it to another list and
         return it """
@@ -1743,13 +1748,14 @@ class RedisProtocol(asyncio.Protocol):
             self.encode_from_native(destination))
 
     @_query_command
+    @typedef(NativeType, int, return_type=(NativeType, NoneType))
     def lindex(self, key, index):
         """ Get an element from a list by its index """
         return self._query(
             b'lindex', self.encode_from_native(key), self._encode_int(index))
 
     @_query_command
-    @return_type(BlockingPopReply)
+    @typedef(ListOf(NativeType), int, return_type=BlockingPopReply)
     def blpop(self, keys, timeout=0):
         """ Remove and get the first element in a list, or block until one is
         available.
@@ -1758,7 +1764,7 @@ class RedisProtocol(asyncio.Protocol):
         return self._blocking_pop(b'blpop', keys, timeout=timeout)
 
     @_query_command
-    @return_type(BlockingPopReply)
+    @typedef(ListOf(NativeType), int, return_type=BlockingPopReply)
     def brpop(self, keys, timeout=0):
         """ Remove and get the last element in a list, or block until one is
         available.
@@ -1774,8 +1780,7 @@ class RedisProtocol(asyncio.Protocol):
 
     @_command
     @asyncio.coroutine
-    @return_type(BlockingPopReply)
-    @return_type(NativeType)
+    @typedef(NativeType, NativeType, int, return_type=NativeType)
     def brpoplpush(self, source, destination, timeout=0):
         """ Pop a value from a list, push it to another list and return it;
         or block until one is available """
@@ -1791,7 +1796,7 @@ class RedisProtocol(asyncio.Protocol):
             raise Return(self.decode_to_native(result))
 
     @_query_command
-    @return_type(StatusReply)
+    @typedef(NativeType, int, NativeType, return_type=StatusReply)
     def lset(self, key, index, value):
         """ Set the value of an element in a list by its index. """
         return self._query(
@@ -1799,7 +1804,7 @@ class RedisProtocol(asyncio.Protocol):
             self.encode_from_native(value))
 
     @_query_command
-    @return_type(int)
+    @typedef(NativeType, NativeType, NativeType, return_type=int)
     def linsert(self, key, pivot, value, before=False):
         """ Insert an element before or after another element in a list """
         return self._query(
@@ -1810,7 +1815,7 @@ class RedisProtocol(asyncio.Protocol):
     # Sorted Sets
 
     @_query_command
-    @return_type(int)
+    @typedef(NativeType, dict, return_type=int)
     def zadd(self, key, values):
         """
         Add one or more members to a sorted set, or update its score if it
@@ -1835,7 +1840,7 @@ class RedisProtocol(asyncio.Protocol):
         return self._query(b'zadd', self.encode_from_native(key), *data)
 
     @_query_command
-    @return_type(ZRangeReply)
+    @typedef(NativeType, int, int, return_type=ZRangeReply)
     def zrange(self, key, start=0, stop=-1):
         """
         Return a range of members in a sorted set, by index.
@@ -1860,7 +1865,7 @@ class RedisProtocol(asyncio.Protocol):
             self._encode_int(stop), b'withscores')
 
     @_query_command
-    @return_type(ZRangeReply)
+    @typedef(NativeType, int, int, return_type=ZRangeReply)
     def zrevrange(self, key, start=0, stop=-1):
         """
         Return a range of members in a reversed sorted set, by index.
@@ -1887,7 +1892,7 @@ class RedisProtocol(asyncio.Protocol):
             self._encode_int(start), self._encode_int(stop), b'withscores')
 
     @_query_command
-    @return_type(ZRangeReply)
+    @typedef(NativeType, ZScoreBoundary, ZScoreBoundary, return_type=ZRangeReply)
     def zrangebyscore(
             self, key,
             min=ZScoreBoundary.MIN_VALUE,
@@ -1899,7 +1904,7 @@ class RedisProtocol(asyncio.Protocol):
             self._encode_zscore_boundary(max), b'withscores')
 
     @_query_command
-    @return_type(ZRangeReply)
+    @typedef(NativeType, ZScoreBoundary, ZScoreBoundary, return_type=ZRangeReply)
     def zrevrangebyscore(
             self, key,
             max=ZScoreBoundary.MAX_VALUE,
@@ -1912,7 +1917,7 @@ class RedisProtocol(asyncio.Protocol):
             self._encode_zscore_boundary(min), b'withscores')
 
     @_query_command
-    @return_type(int)
+    @typedef(NativeType, ZScoreBoundary, ZScoreBoundary, return_type=int)
     def zremrangebyscore(
             self, key,
             min=ZScoreBoundary.MIN_VALUE,
@@ -1924,7 +1929,7 @@ class RedisProtocol(asyncio.Protocol):
             self._encode_zscore_boundary(max))
 
     @_query_command
-    @return_type(int)
+    @typedef(NativeType, int, int, return_type=int)
     def zremrangebyrank(self, key, min=0, max=-1):
         """ Remove all members in a sorted set within the given indexes """
         return self._query(
@@ -1932,7 +1937,7 @@ class RedisProtocol(asyncio.Protocol):
             self._encode_int(min), self._encode_int(max))
 
     @_query_command
-    @return_type(int)
+    @typedef(NativeType, ZScoreBoundary, ZScoreBoundary, return_type=int)
     def zcount(self, key, min, max):
         """ Count the members in a sorted set with scores within the given
         values """
@@ -1942,7 +1947,7 @@ class RedisProtocol(asyncio.Protocol):
             self._encode_zscore_boundary(max))
 
     @_query_command
-    @return_type((float, NoneType))
+    @typedef(NativeType, NativeType, return_type=(float, NoneType))
     def zscore(self, key, member):
         """ Get the score associated with the given member in a sorted set """
         return self._query(
@@ -1950,7 +1955,7 @@ class RedisProtocol(asyncio.Protocol):
             self.encode_from_native(member))
 
     @_query_command
-    @return_type(int)
+    @typedef(NativeType, ListOf(NativeType), (NoneType,ListOf(float)), return_type=int)
     def zunionstore(self, destination, keys, weights=None,
                     aggregate=ZAggregate.SUM):
         """ Add multiple sorted sets and store the resulting sorted set in a
@@ -1959,7 +1964,7 @@ class RedisProtocol(asyncio.Protocol):
             b'zunionstore', destination, keys, weights, aggregate)
 
     @_query_command
-    @return_type(int)
+    @typedef(NativeType, ListOf(NativeType), (NoneType,ListOf(float)), return_type=int)
     def zinterstore(self, destination, keys, weights=None,
                     aggregate=ZAggregate.SUM):
         """ Intersect multiple sorted sets and store the resulting sorted set
@@ -1987,12 +1992,13 @@ class RedisProtocol(asyncio.Protocol):
                ]))
 
     @_query_command
-    @return_type(int)
+    @typedef(NativeType, return_type=int)
     def zcard(self, key):
         """ Get the number of members in a sorted set """
         return self._query(b'zcard', self.encode_from_native(key))
 
     @_query_command
+    @typedef(NativeType, NativeType, return_type=(int, NoneType))
     def zrank(self, key, member):
         """ Determine the index of a member in a sorted set """
         return self._query(
@@ -2000,6 +2006,7 @@ class RedisProtocol(asyncio.Protocol):
             self.encode_from_native(member))
 
     @_query_command
+    @typedef(NativeType, NativeType, return_type=(int, NoneType))
     def zrevrank(self, key, member):
         """ Determine the index of a member in a sorted set, with scores
         ordered from high to low """
@@ -2008,7 +2015,7 @@ class RedisProtocol(asyncio.Protocol):
             self.encode_from_native(member))
 
     @_query_command
-    @return_type(float)
+    @typedef(NativeType, float, NativeType, return_type=float)
     def zincrby(self, key, increment, member):
         """ Increment the score of a member in a sorted set """
         return self._query(
@@ -2016,7 +2023,7 @@ class RedisProtocol(asyncio.Protocol):
             self._encode_float(increment), self.encode_from_native(member))
 
     @_query_command
-    @return_type(int)
+    @typedef(NativeType, ListOf(NativeType), return_type=int)
     def zrem(self, key, members):
         """ Remove one or more members from a sorted set """
         return self._query(
@@ -2026,7 +2033,7 @@ class RedisProtocol(asyncio.Protocol):
     # Hashes
 
     @_query_command
-    @return_type(int)
+    @typedef(NativeType, NativeType, NativeType, return_type=int)
     def hset(self, key, field, value):
         """ Set the string value of a hash field """
         return self._query(
@@ -2034,7 +2041,7 @@ class RedisProtocol(asyncio.Protocol):
             self.encode_from_native(field), self.encode_from_native(value))
 
     @_query_command
-    @return_type(StatusReply)
+    @typedef(NativeType, dict, return_type=StatusReply)
     def hmset(self, key, values):
         """ Set multiple hash fields to multiple values """
         data = []
@@ -2050,7 +2057,7 @@ class RedisProtocol(asyncio.Protocol):
         return self._query(b'hmset', self.encode_from_native(key), *data)
 
     @_query_command
-    @return_type(int)
+    @typedef(NativeType, NativeType, NativeType, return_type=int)
     def hsetnx(self, key, field, value):
         """ Set the value of a hash field, only if the field does not exist """
         return self._query(
@@ -2058,7 +2065,7 @@ class RedisProtocol(asyncio.Protocol):
             self.encode_from_native(field), self.encode_from_native(value))
 
     @_query_command
-    @return_type(int)
+    @typedef(NativeType, ListOf(NativeType), return_type=int)
     def hdel(self, key, fields):
         """ Delete one or more hash fields """
         return self._query(
@@ -2066,6 +2073,7 @@ class RedisProtocol(asyncio.Protocol):
             *map(self.encode_from_native, fields))
 
     @_query_command
+    @typedef(NativeType, NativeType, return_type=(NativeType, NoneType))
     def hget(self, key, field):
         """ Get the value of a hash field """
         return self._query(
@@ -2073,7 +2081,7 @@ class RedisProtocol(asyncio.Protocol):
             self.encode_from_native(field))
 
     @_query_command
-    @return_type(bool)
+    @typedef(NativeType, NativeType, return_type=bool)
     def hexists(self, key, field):
         """ Returns if field is an existing field in the hash stored at key."""
         return self._query(
@@ -2081,31 +2089,31 @@ class RedisProtocol(asyncio.Protocol):
             self.encode_from_native(field))
 
     @_query_command
-    @return_type(SetReply)
+    @typedef(NativeType, return_type=SetReply)
     def hkeys(self, key):
         """ Get all the keys in a hash. (Returns a set) """
         return self._query(b'hkeys', self.encode_from_native(key))
 
     @_query_command
-    @return_type(ListReply)
+    @typedef(NativeType, return_type=ListReply)
     def hvals(self, key):
         """ Get all the values in a hash. (Returns a list) """
         return self._query(b'hvals', self.encode_from_native(key))
 
     @_query_command
-    @return_type(int)
+    @typedef(NativeType, return_type=int)
     def hlen(self, key):
         """Returns the number of fields contained in the hash stored at key."""
         return self._query(b'hlen', self.encode_from_native(key))
 
     @_query_command
-    @return_type(DictReply)
+    @typedef(NativeType, return_type=DictReply)
     def hgetall(self, key):
         """ Get the value of a hash field """
         return self._query(b'hgetall', self.encode_from_native(key))
 
     @_query_command
-    @return_type(ListReply)
+    @typedef(NativeType, ListOf(NativeType), return_type=ListReply)
     def hmget(self, key, fields):
         """ Get the values of all the given hash fields """
         return self._query(
@@ -2113,7 +2121,7 @@ class RedisProtocol(asyncio.Protocol):
             *map(self.encode_from_native, fields))
 
     @_query_command
-    @return_type(int)
+    @typedef(NativeType, NativeType, return_type=int)
     def hincrby(self, key, field, increment):
         """ Increment the integer value of a hash field by the given number
         Returns: the value at field after the increment operation. """
@@ -2123,7 +2131,7 @@ class RedisProtocol(asyncio.Protocol):
             self.encode_from_native(field), self._encode_int(increment))
 
     @_query_command
-    @return_type(float)
+    @typedef(NativeType, NativeType, (int,float), return_type=float)
     def hincrbyfloat(self, key, field, increment):
         """ Increment the float value of a hash field by the given amount
         Returns: the value at field after the increment operation. """
@@ -2136,6 +2144,7 @@ class RedisProtocol(asyncio.Protocol):
     # Subscription class.)
 
     @_command
+    @typedef(return_type='Subscription')
     def start_subscribe(self, *a):
         """
         Start a pubsub listener.
@@ -2170,21 +2179,21 @@ class RedisProtocol(asyncio.Protocol):
         raise Return(subscription)
 
     @_command
-    @return_type(NoneType)
+    @typedef(ListOf(NativeType), return_type=NoneType)
     def _subscribe(self, channels):
         """ Listen for messages published to the given channels """
         self._pubsub_channels |= set(channels)
         return self._pubsub_method('subscribe', channels)
 
     @_command
-    @return_type(NoneType)
+    @typedef(ListOf(NativeType), return_type=NoneType)
     def _unsubscribe(self, channels):
         """ Stop listening for messages posted to the given channels """
         self._pubsub_channels -= set(channels)
         return self._pubsub_method('unsubscribe', channels)
 
     @_command
-    @return_type(NoneType)
+    @typedef(ListOf(NativeType), return_type=NoneType)
     def _psubscribe(self, patterns):
         """Listen for messages published to channels matching the given
         patterns"""
@@ -2192,7 +2201,7 @@ class RedisProtocol(asyncio.Protocol):
         return self._pubsub_method('psubscribe', patterns)
 
     @_command
-    @return_type(NoneType)
+    @typedef(ListOf(NativeType), return_type=NoneType)
     def _punsubscribe(self, patterns):
         """ Stop listening for messages posted to channels matching the
         given patterns """
@@ -2219,7 +2228,7 @@ class RedisProtocol(asyncio.Protocol):
         # each parameter, but we can safely ignore those replies that.
 
     @_query_command
-    @return_type(int)
+    @typedef(NativeType, NativeType, return_type=int)
     def publish(self, channel, message):
         """ Post a message to a channel
         (Returns the number of clients that received this message.) """
@@ -2228,7 +2237,7 @@ class RedisProtocol(asyncio.Protocol):
             self.encode_from_native(message))
 
     @_query_command
-    @return_type(ListReply)
+    @typedef((NativeType, NoneType), return_type=ListReply)
     def pubsub_channels(self, pattern=None):
         """
         Lists the currently active channels. An active channel is a Pub/Sub
@@ -2240,7 +2249,7 @@ class RedisProtocol(asyncio.Protocol):
             (self.encode_from_native(pattern) if pattern else b'*'))
 
     @_query_command
-    @return_type(DictReply)
+    @typedef(ListOf(NativeType), return_type=DictReply)
     def pubsub_numsub(self, channels):
         """Returns the number of subscribers (not counting clients subscribed
         to patterns) for the specified channels.  """
@@ -2249,7 +2258,7 @@ class RedisProtocol(asyncio.Protocol):
             *[self.encode_from_native(c) for c in channels])
 
     @_query_command
-    @return_type(int)
+    @typedef(return_type=int)
     def pubsub_numpat(self):
         """ Returns the number of subscriptions to patterns (that are performed
         using the PSUBSCRIBE command). Note that this is not just the count of
@@ -2260,55 +2269,55 @@ class RedisProtocol(asyncio.Protocol):
     # Server
 
     @_query_command
-    @return_type(StatusReply)
+    @typedef(return_type=StatusReply)
     def ping(self):
         """ Ping the server (Returns PONG) """
         return self._query(b'ping')
 
     @_query_command
-    @return_type(NativeType)
+    @typedef(NativeType, return_type=NativeType)
     def echo(self, string):
         """ Echo the given string """
         return self._query(b'echo', self.encode_from_native(string))
 
     @_query_command
-    @return_type(StatusReply)
+    @typedef(return_type=StatusReply)
     def save(self):
         """ Synchronously save the dataset to disk """
         return self._query(b'save')
 
     @_query_command
-    @return_type(StatusReply)
+    @typedef(return_type=StatusReply)
     def bgsave(self):
         """ Asynchronously save the dataset to disk """
         return self._query(b'bgsave')
 
     @_query_command
-    @return_type(StatusReply)
+    @typedef(return_type=StatusReply)
     def bgrewriteaof(self):
         """ Asynchronously rewrite the append-only file """
         return self._query(b'bgrewriteaof')
 
     @_query_command
-    @return_type(int)
+    @typedef(return_type=int)
     def lastsave(self):
         """ Get the UNIX time stamp of the last successful save to disk """
         return self._query(b'lastsave')
 
     @_query_command
-    @return_type(int)
+    @typedef(return_type=int)
     def dbsize(self):
         """ Return the number of keys in the currently-selected database. """
         return self._query(b'dbsize')
 
     @_query_command
-    @return_type(StatusReply)
+    @typedef(return_type=StatusReply)
     def flushall(self):
         """ Remove all keys from all databases """
         return self._query(b'flushall')
 
     @_query_command
-    @return_type(StatusReply)
+    @typedef(return_type=StatusReply)
     def flushdb(self):
         """ Delete all the keys of the currently selected DB. This
         command never fails. """
@@ -2320,13 +2329,13 @@ class RedisProtocol(asyncio.Protocol):
 #        raise NotImplementedError
 
     @_query_command
-    @return_type(StatusReply)
+    @typedef(NativeType, return_type=StatusReply)
     def type(self, key):
         """ Determine the type stored at key """
         return self._query(b'type', self.encode_from_native(key))
 
     @_query_command
-    @return_type(StatusReply)
+    @typedef(six.text_type, six.text_type, return_type=StatusReply)
     def config_set(self, parameter, value):
         """ Set a configuration parameter to the given value """
         return self._query(
@@ -2334,26 +2343,26 @@ class RedisProtocol(asyncio.Protocol):
             self.encode_from_native(value))
 
     @_query_command
-    @return_type(ConfigPairReply)
+    @typedef(six.text_type, return_type=ConfigPairReply)
     def config_get(self, parameter):
         """ Get the value of a configuration parameter """
         return self._query(
             b'config', b'get', self.encode_from_native(parameter))
 
     @_query_command
-    @return_type(StatusReply)
+    @typedef(return_type=StatusReply)
     def config_rewrite(self):
         """ Rewrite the configuration file with the in memory configuration """
         return self._query(b'config', b'rewrite')
 
     @_query_command
-    @return_type(StatusReply)
+    @typedef(return_type=StatusReply)
     def config_resetstat(self):
         """ Reset the stats returned by INFO """
         return self._query(b'config', b'resetstat')
 
     @_query_command
-    @return_type(InfoReply)
+    @typedef((NativeType, NoneType), return_type=InfoReply)
     def info(self, section=None):
         """ Get information and statistics about the server """
         if section is None:
@@ -2362,33 +2371,33 @@ class RedisProtocol(asyncio.Protocol):
             return self._query(b'info', self.encode_from_native(section))
 
     @_query_command
-    @return_type(StatusReply)
+    @typedef(return_type=StatusReply)
     def shutdown(self, save=False):
         """ Synchronously save the dataset to disk and then shut down the
         server """
         return self._query(b'shutdown', (b'save' if save else b'nosave'))
 
     @_query_command
-    @return_type(NativeType)
+    @typedef(return_type=NativeType)
     def client_getname(self):
         """ Get the current connection name """
         return self._query(b'client', b'getname')
 
     @_query_command
-    @return_type(StatusReply)
+    @typedef(return_type=StatusReply)
     def client_setname(self, name):
         """ Set the current connection name """
         return self._query(
             b'client', b'setname', self.encode_from_native(name))
 
     @_query_command
-    @return_type(ClientListReply)
+    @typedef(return_type=ClientListReply)
     def client_list(self):
         """ Get the list of client connections """
         return self._query(b'client', b'list')
 
     @_query_command
-    @return_type(StatusReply)
+    @typedef(six.text_type, return_type=StatusReply)
     def client_kill(self, address):
         """
         Kill the connection of a client
@@ -2399,6 +2408,7 @@ class RedisProtocol(asyncio.Protocol):
     # LUA scripting
 
     @_command
+    @typedef(six.text_type, return_type='Script')
     def register_script(self, script):
         """
         Register a LUA script.
@@ -2414,20 +2424,20 @@ class RedisProtocol(asyncio.Protocol):
         raise Return(Script(sha, script, lambda: self.evalsha))
 
     @_query_command
-    @return_type(ListOf(bool))
+    @typedef(ListOf(six.text_type), return_type=ListOf(bool))
     def script_exists(self, shas):
         """ Check existence of scripts in the script cache. """
         return self._query(
             b'script', b'exists', *[sha.encode('ascii') for sha in shas])
 
     @_query_command
-    @return_type(StatusReply)
+    @typedef(return_type=StatusReply)
     def script_flush(self):
         """ Remove all the scripts from the script cache. """
         return self._query(b'script', b'flush')
 
     @_query_command
-    @return_type(StatusReply)
+    @typedef(return_type=StatusReply)
     def script_kill(self):
         """
         Kill the script currently in execution.  This raises
@@ -2445,7 +2455,7 @@ class RedisProtocol(asyncio.Protocol):
             raise Return(result)
 
     @_query_command
-    @return_type(EvalScriptReply)
+    @typedef(six.text_type, (ListOf(NativeType), NoneType), (ListOf(NativeType), NoneType), return_type=EvalScriptReply)
     def evalsha(self, sha, keys=None, args=None):
         """
         Evaluates a script cached on the server side by its SHA1 digest.
@@ -2472,7 +2482,7 @@ class RedisProtocol(asyncio.Protocol):
             raise ScriptKilledError
 
     @_query_command
-    @return_type(six.text_type)
+    @typedef(six.text_type, return_type=six.text_type)
     def script_load(self, script):
         """ Load script, returns sha1 """
         return self._query(b'script', b'load', script.encode('ascii'))
@@ -2480,7 +2490,7 @@ class RedisProtocol(asyncio.Protocol):
     # Scanning
 
     @_command
-    @return_type(Cursor)
+    @typedef(NativeType, return_type=Cursor)
     def scan(self, match='*'):
         """
         Walk through the keys space. You can either fetch the items one by one
@@ -2510,21 +2520,20 @@ class RedisProtocol(asyncio.Protocol):
         if False:
             yield
 
-        @return_type(Cursor)
         def scanfunc(cursor):
             return self._scan(cursor, match)
 
         raise Return(Cursor(name='scan(match=%r)' % match, scanfunc=scanfunc))
 
     @_query_command
-    @return_type(_ScanPart)
+    @typedef(int, NativeType, return_type=_ScanPart)
     def _scan(self, cursor, match):
         return self._query(
             b'scan', self._encode_int(cursor),
             b'match', self.encode_from_native(match))
 
     @_command
-    @return_type(SetCursor)
+    @typedef(NativeType, NativeType, return_type=SetCursor)
     def sscan(self, key, match='*'):
         """
         Incrementally iterate set elements
@@ -2535,14 +2544,14 @@ class RedisProtocol(asyncio.Protocol):
             yield
         name = 'sscan(key=%r match=%r)' % (key, match)
 
-        @return_type(Cursor)
+        @typedef(NativeType, return_type=Cursor)
         def scan(cursor):
             return self._do_scan(b'sscan', key, cursor, match)
 
         raise Return(SetCursor(name=name, scanfunc=scan))
 
     @_command
-    @return_type(DictCursor)
+    @typedef(NativeType, NativeType, return_type=DictCursor)
     def hscan(self, key, match='*'):
         """
         Incrementally iterate hash fields and associated values
@@ -2552,14 +2561,14 @@ class RedisProtocol(asyncio.Protocol):
             yield
         name = 'hscan(key=%r match=%r)' % (key, match)
 
-        @return_type(Cursor)
+        @typedef(NativeType, return_type=Cursor)
         def scan(cursor):
             return self._do_scan(b'hscan', key, cursor, match)
 
         raise Return(DictCursor(name=name, scanfunc=scan))
 
     @_command
-    @return_type(DictCursor)
+    @typedef(NativeType, NativeType, return_type=DictCursor)
     def zscan(self, key, match='*'):
         """
         Incrementally iterate sorted sets elements and associated scores
@@ -2569,14 +2578,14 @@ class RedisProtocol(asyncio.Protocol):
             yield
         name = 'zscan(key=%r match=%r)' % (key, match)
 
-        @return_type(Cursor)
+        @typedef(NativeType, return_type=Cursor)
         def scan(cursor):
             return self._do_scan(b'zscan', key, cursor, match)
 
         raise Return(ZCursor(name=name, scanfunc=scan))
 
     @_query_command
-    @return_type(_ScanPart)
+    @typedef(six.binary_type, NativeType, int, NativeType, return_type=_ScanPart)
     def _do_scan(self, verb, key, cursor, match):
         return self._query(verb, self.encode_from_native(key),
                            self._encode_int(cursor),
@@ -2586,6 +2595,7 @@ class RedisProtocol(asyncio.Protocol):
 
     @_command
     @asyncio.coroutine
+    @typedef((ListOf(NativeType),NoneType), return_type='Transaction')
     def multi(self, watch=None):
         """
         Start of transaction.

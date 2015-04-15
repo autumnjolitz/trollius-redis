@@ -281,6 +281,7 @@ class PostProcessors(object):
             StatusReply: cls.bytes_to_status_reply,
             (StatusReply, NoneType): cls.bytes_to_status_reply_or_none,
             int: None,
+            (int, long): None,
             (int, NoneType): None,
             ConfigPairReply: cls.multibulk_as_configpair,
             ListOf(bool): cls.multibulk_as_boolean_list,
@@ -337,7 +338,7 @@ class PostProcessors(object):
     @asyncio.coroutine
     def multibulk_as_set(protocol, result):
         assert isinstance(result, MultiBulkReply), \
-            'Result is not MultiBulkReply, is {0}'.format(type(result))
+            'Result is not MultiBulkReply, is {0}, {1}'.format(type(result), result)
         return SetReply(result)
 
     @staticmethod
@@ -398,7 +399,7 @@ class PostProcessors(object):
     @asyncio.coroutine
     def bytes_to_status_reply(protocol, result):
         assert isinstance(result, bytes), \
-            "Result is not bytes. Is {0}".format(type(result))
+            "Result is not bytes. Is {0}, {1}".format(type(result), result)
         return StatusReply(result.decode('utf-8'))
 
     @staticmethod
@@ -417,19 +418,22 @@ class PostProcessors(object):
     @staticmethod
     @asyncio.coroutine
     def int_to_bool(protocol, result):
-        assert isinstance(result, int)
+        assert isinstance(result, (int, long)), \
+            "Cannot coerce {0}. Wrong data type.".format(type(result))
         return bool(result)  # Convert int to bool
 
     @staticmethod
     @asyncio.coroutine
     def bytes_to_native(protocol, result):
-        assert isinstance(result, bytes)
+        assert isinstance(result, bytes), \
+            "Cannot coerce {0}".format(type(result))
         return protocol.decode_to_native(result)
 
     @staticmethod
     @asyncio.coroutine
     def bytes_to_str(protocol, result):
-        assert isinstance(result, bytes)
+        assert isinstance(result, bytes), \
+            "Cannot coerce {0}".format(type(result))
         return result.decode('ascii')
 
     @staticmethod
@@ -438,7 +442,8 @@ class PostProcessors(object):
         if result is None:
             return result
         else:
-            assert isinstance(result, bytes)
+            assert isinstance(result, bytes), \
+                "Cannot coerce {0}".format(type(result))
             return protocol.decode_to_native(result)
 
     @staticmethod
@@ -557,7 +562,6 @@ class CommandCreator(object):
                             real_type = self.get_real_type(
                                 protocol, params[name])
                             if not isinstance(value, real_type):
-                                print(params[name], name)
                                 raise TypeError(
                                     'RedisProtocol.%s received %r, expected %r'
                                     % (self.method.__name__,
@@ -579,12 +583,18 @@ class CommandCreator(object):
                 """
                 if protocol.enable_typechecking:
                     expected_type = self.get_real_type(protocol, return_type)
-                    if not isinstance(result, expected_type):
-                        raise TypeError(
-                            'Got unexpected return type %r in RedisProtocol.%s'
-                            ', expected %r' %
-                            (type(result).__name__, self.method.__name__,
-                             expected_type))
+                    try:
+                        res = not isinstance(result, expected_type)
+                    except Exception:
+                        print(expected_type, type(result))
+                        raise
+                    else:
+                        if res:
+                            raise TypeError(
+                                'Got unexpected return type %r in RedisProtocol.%s'
+                                ', expected %r' %
+                                (type(result).__name__, self.method.__name__,
+                                 expected_type))
         else:
             def typecheck_return(protocol, result):
                 pass
@@ -665,6 +675,7 @@ class CommandCreator(object):
                     list: 'list',
                     set: 'set',
                     dict: 'dict',
+                    long: 'int',
 
                     # XXX: Because of circulare references, we cannot use the
                     # real types here.
@@ -797,7 +808,7 @@ class QueryCommandCreator(CommandCreator):
 
         return result
 
-_SMALL_INTS = list(unicode(i).encode('ascii') for i in range(1000))
+_SMALL_INTS = list(six.text_type(i).encode('ascii') for i in range(1000))
 
 
 # List of all command methods.
@@ -1422,7 +1433,7 @@ class RedisProtocol(asyncio.Protocol):
             self.encode_from_native(newkey))
 
     @_query_command
-    @typedef(NativeType, NativeType, return_type=StatusReply)
+    @typedef(NativeType, NativeType, return_type=int)
     def renamenx(self, key, newkey):
         """ Rename a key, only if the new key does not exist
         (Returns 1 if the key was successfully renamed.) """
@@ -1618,7 +1629,7 @@ class RedisProtocol(asyncio.Protocol):
         return self._query(b'sinter', *map(self.encode_from_native, keys))
 
     @_query_command
-    @typedef(NativeType, ListOf(NativeType), return_type=SetReply)
+    @typedef(NativeType, ListOf(NativeType), return_type=int)
     def sinterstore(self, destination, keys):
         """ Intersect multiple sets and store the resulting set in a key """
         return self._query(
@@ -1711,7 +1722,7 @@ class RedisProtocol(asyncio.Protocol):
             self._encode_int(count), self.encode_from_native(value))
 
     @_query_command
-    @typedef(int, int, return_type=ListReply)
+    @typedef(NativeType, int, int, return_type=ListReply)
     def lrange(self, key, start=0, stop=-1):
         """ Get a range of elements from a list. """
         return self._query(
@@ -2144,7 +2155,7 @@ class RedisProtocol(asyncio.Protocol):
     # Subscription class.)
 
     @_command
-    @typedef(return_type='Subscription')
+    @typedef(return_type=u'Subscription')
     def start_subscribe(self, *a):
         """
         Start a pubsub listener.
@@ -2408,7 +2419,7 @@ class RedisProtocol(asyncio.Protocol):
     # LUA scripting
 
     @_command
-    @typedef(six.text_type, return_type='Script')
+    @typedef(six.text_type, return_type=u'Script')
     def register_script(self, script):
         """
         Register a LUA script.
@@ -2595,7 +2606,7 @@ class RedisProtocol(asyncio.Protocol):
 
     @_command
     @asyncio.coroutine
-    @typedef((ListOf(NativeType),NoneType), return_type='Transaction')
+    @typedef((ListOf(NativeType),NoneType), return_type=u'Transaction')
     def multi(self, watch=None):
         """
         Start of transaction.
@@ -2862,6 +2873,8 @@ class HiRedisProtocol(RedisProtocol):
 
     def _process_hiredis_item(self, item, cb):
         if isinstance(item, (bytes, int, long)):
+            if isinstance(item, long):
+                item = int(item)
             cb(item)
         elif isinstance(item, list):
             reply = MultiBulkReply(self, len(item), loop=self._loop)

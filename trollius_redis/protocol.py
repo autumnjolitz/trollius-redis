@@ -58,15 +58,10 @@ __all__ = (
     'ZScoreBoundary',
 )
 
-
-def return_type(type_name):
-    def decorator(func):
-        if hasattr(func, 'return_type'):
-            func.return_type = (func.return_type,) + (type_name,)
-        else:
-            func.return_type = type_name
-        return func
-    return decorator
+try:
+    long
+except NameError:
+    long = int
 
 
 def typedef(*input_types, **kwargs):
@@ -682,11 +677,7 @@ class CommandCreator(object):
                     'Subscription': ":class:`trollius_redis.Subscription`",
                     'Script': ":class:`~trollius_redis.Script`",
                 }
-                try:
-                    long
-                except NameError:
-                    pass
-                else:
+                if long is not int:
                     v[long] = 'long'
                 return v[type_]
             except KeyError:

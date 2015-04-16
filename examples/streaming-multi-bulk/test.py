@@ -20,29 +20,29 @@ if __name__ == '__main__':
 
     def run():
         connection = yield From(trollius_redis.Connection.create(
-            host='localhost', port=6379))
+            host=u'localhost', port=6379))
 
         # Create a set that contains a million items
-        print('Creating big set contains a million items (Can'
-              ' take about half a minute)')
+        print(u'Creating big set contains a million items (Can'
+              u' take about half a minute)')
 
-        yield From(connection.delete(['my-big-set']))
+        yield From(connection.delete([u'my-big-set']))
 
         # We will suffix all the items with a very long key, just to be sure
         # that this needs many IP packets, in order to send or receive this.
-        long_string = 'abcdefghij' * 1000  # len=10k
+        long_string = u'abcdefghij' * 1000  # len=10k
 
         for prefix in range(10):
-            print('Callidng redis sadd:', prefix, '/10')
+            print(u'Callidng redis sadd:', prefix, u'/10')
             yield From(
                 connection.sadd(
-                    'my-big-set',
-                    ('%s-%s-%s' % (prefix, i, long_string)
+                    u'my-big-set',
+                    (u'%s-%s-%s' % (prefix, i, long_string)
                     for i in range(10 * 1000))))
-        print('Done\n')
+        print(u'Done\n')
 
         # Now stream the values from the database:
-        print('Streaming values, calling smembers')
+        print(u'Streaming values, calling smembers')
 
         # The following smembers call will block until the first IP packet
         # containing the head of the multi bulk reply comes in. This will
@@ -50,8 +50,8 @@ if __name__ == '__main__':
         # information to create a SetReply instance. Probably the first packet
         # will also contain the first X members, so we don't have to wait for
         # these anymore.
-        set_reply = yield From(connection.smembers('my-big-set'))
-        print('Got: ', set_reply)
+        set_reply = yield From(connection.smembers(u'my-big-set'))
+        print(u'Got: ', set_reply)
 
         # Stream the items, this will probably wait for the next IP packets to
         # come in.
@@ -60,6 +60,6 @@ if __name__ == '__main__':
             m = yield From(f)
             count += 1
             if count % 1000 == 0:
-                print('Received %i items' % count)
+                print(u'Received %i items' % count)
 
     loop.run_until_complete(run())

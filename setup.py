@@ -1,7 +1,15 @@
 #!/usr/bin/env python
 from setuptools import setup
 from codecs import open
-install_requires = ['trollius', 'six', 'mock']
+
+install_requires = ['trollius', 'six']
+
+try:
+    from unittest import mock
+    mock
+except ImportError:
+    install_requires.append('mock')
+
 try:
     import __pypy__
     __pypy__
@@ -10,10 +18,6 @@ except ImportError:
 
 with open("README.rst", 'r') as fh:
     description = fh.read()
-import sys
-
-if not sys.version_info < (3, 0, 0):
-    raise ImportError("Does not run on Python 3")
 
 setup(
     name='trollius_redis',
@@ -36,15 +40,14 @@ setup(
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
         'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
-        # Python 3 doesn't work until we can make pubsub bytes work.
-        # 'Programming Language :: Python :: 3',
-        # 'Programming Language :: Python :: 3.2',
-        # 'Programming Language :: Python :: 3.3',
-        # 'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.2',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
     ],
-    version='0.0.3',
+    version='0.1.0',
     license='LICENSE.txt',
     url='https://github.com/benjolitz/trollius-redis',
 

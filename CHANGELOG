@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+0.1.0: 2015-04-16:
+-------------------
+- Python 3 support! If you're using Trollius and migrating to Python 3, you're good to go!
+
+
 0.0.3: 2015-04-15:
 -------------------
 - pass additional arguments

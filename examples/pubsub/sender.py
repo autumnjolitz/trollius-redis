@@ -4,7 +4,7 @@ import trollius as asyncio
 from trollius import From
 import trollius_redis
 import logging
-
+import six
 
 if __name__ == '__main__':
     loop = asyncio.get_event_loop()
@@ -22,7 +22,8 @@ if __name__ == '__main__':
             while True:
                 # Get input (always use executor for blocking calls)
                 text = yield From(
-                    loop.run_in_executor(None, raw_input, u'Enter message: '))
+                    loop.run_in_executor(
+                        None, six.moves.input, u'Enter message: '))
 
                 # Publish value
                 try:

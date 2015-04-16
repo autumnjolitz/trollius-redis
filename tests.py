@@ -58,7 +58,10 @@ from six.moves import range
 PORT = int(os.environ.get('REDIS_PORT', 6379))
 HOST = os.environ.get('REDIS_HOST', '127.0.0.1')
 START_REDIS_SERVER = bool(os.environ.get('START_REDIS_SERVER', False))
-
+try:
+    long
+except NameError:
+    long = int
 
 @asyncio.coroutine
 def connect(loop, protocol=RedisProtocol):
@@ -853,9 +856,14 @@ class RedisProtocolTest(TestCase):
             self.assertIsInstance(value, PubSubReply)
             self.assertEqual(value.channel, u'our_channel')
             self.assertEqual(value.value, u'message2')
+            pubsub_signature = \
+                "PubSubReply(channel='our_channel', value='message2')"
+            if six.PY2:
+                pubsub_signature = \
+                    "PubSubReply(channel=u'our_channel', value=u'message2')"
             self.assertEqual(
                 repr(value),
-                "PubSubReply(channel=u'our_channel', value=u'message2')")
+                pubsub_signature)
 
             raise Return(transport2)
 
@@ -2117,8 +2125,13 @@ class RedisPoolTest(TestCase):
                     self.assertIsInstance(reply, BlockingPopReply)
                     self.assertIsInstance(reply.value, six.text_type)
                     results.append(reply.value)
+                    blocking_reply_signature = \
+                        "BlockingPopReply(list_name='my-list', value='"
+                    if six.PY2:
+                        blocking_reply_signature = \
+                            "BlockingPopReply(list_name=u'my-list', value=u'"
                     self.assertIn(
-                        "BlockingPopReply(list_name=u'my-list', value=u'",
+                        blocking_reply_signature,
                         repr(reply))
 
             # Source: Push items on the queue

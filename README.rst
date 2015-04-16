@@ -7,7 +7,9 @@ Redis client for Python trollius
 
 Supports
 ---------
-Python 2.7, 3.3-3.5
+- CPython 2.7, 3.3-3.5
+- PyPy
+- PyPy3
 
 
 Description
@@ -27,7 +29,7 @@ If you're new to asyncio, it can be helpful to check out
 
 .. _the asyncio documentation: http://docs.python.org/dev/library/asyncio.html
 
-To see the original awesome driver, I advise you to take a look at `asyncio-redis`_.
+To see the original awesome driver that I ported from, I advise you to take a look at Jonathan Slenders `asyncio-redis`_.
 
 .. _asyncio-redis: https://github.com/jonathanslenders/asyncio-redis.git
 

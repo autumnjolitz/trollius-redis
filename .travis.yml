@@ -4,7 +4,9 @@ python:
   - "2.7"
   - "3.3"
   - "3.4"
-  - "3.5"
+  - "nightly"
+  - "pypy"
+  - "pypy3"
 
 before_install:
   - sudo apt-get install redis-server

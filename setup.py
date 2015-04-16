@@ -10,8 +10,8 @@ except ImportError:
 
 setup(
     name='trollius_redis',
-    author='Jonathan Slenders and Ben Jolitz',
-    version='0.13.4',
+    author='Jonathan Slenders, Ben Jolitz',
+    version='0.0.1',
     license='LICENSE.txt',
     url='https://github.com/benjolitz/trollius-redis',
 

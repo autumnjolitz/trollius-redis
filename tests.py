@@ -398,7 +398,7 @@ class RedisProtocolTest(TestCase):
         self.assertIsInstance(value, SetReply)
         self.assertEqual(repr(value), u"SetReply(length=3)")
         value = yield From(value.asset())
-        self.assertEqual(value, {u'a', u'b', u'c'})
+        self.assertEqual(value, set([u'a', u'b', u'c']))
 
         # sismember
         value = yield From(protocol.sismember(u'our_set', u'a'))

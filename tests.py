@@ -1734,7 +1734,7 @@ class RedisProtocolTest(TestCase):
         '''
         Test hscan '''
         size = 1000
-        items = dict((u'key-%i' % i, u'values-%i' % i) for i in range(size))
+        items = {u'key-%i' % i: u'values-%i' % i for i in range(size)}
 
         # Create a huge set
         yield From(protocol.delete([u'my-dict']))
@@ -1767,7 +1767,7 @@ class RedisProtocolTest(TestCase):
         '''
         Test zscan '''
         size = 1000
-        items = dict((u'key-%i' % i, (i + 0.1)) for i in range(size))
+        items = {u'key-%i' % i: (i + 0.1) for i in range(size)}
 
         # Create a huge set
         yield From(protocol.delete([u'my-z']))

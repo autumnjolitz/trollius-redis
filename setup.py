@@ -18,6 +18,7 @@ if not sys.version_info < (3, 0, 0):
 setup(
     name='trollius_redis',
     author='Jonathan Slenders, Ben Jolitz',
+    author_email="ben.jolitz+asyncio_trollius@gmail.com",
     classifiers=[
         # How mature is this project? Common values are
         #   3 - Alpha
@@ -27,7 +28,7 @@ setup(
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers',
-        'Topic :: Databases',
+        'Topic :: Database',
 
         # Pick your license as you wish (should match "license" above)
         'License :: OSI Approved :: BSD License',

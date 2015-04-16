@@ -2602,7 +2602,40 @@ class RedisProtocol(six.with_metaclass(_RedisProtocolMeta, asyncio.Protocol)):
 
     @_command
     @asyncio.coroutine
-    @typedef((ListOf(NativeType),NoneType), return_type=u'Transaction')
+    @typedef(ListOf(NativeType), return_type=NoneType)
+    def watch(self, keys):
+        """
+        Watch keys (pulled in from asyncio-redis
+            ac9467ef381523da1aeee293fac71e443b3c018f)
+
+        ::
+
+            # Watch keys for concurrent updates
+            yield From(protocol.watch([u'key', u'other_key']))
+
+            value = yield From(protocol.get(u'key'))
+            another_value = yield From(protocol.get(u'another_key'))
+
+            transaction = yield From(protocol.multi())
+
+            f1 = yield From(transaction.set(u'key', another_value))
+            f2 = yield From(transaction.set(u'another_key', value))
+
+            # Commit transaction
+            yield From(transaction.exec())
+
+            # Retrieve results
+            yield From(f1)
+            yield From(f2)
+
+        """
+        result = yield From(self._query(
+            b'watch', *map(self.encode_from_native, keys)))
+        assert result == b'OK'
+
+    @_command
+    @asyncio.coroutine
+    @typedef((ListOf(NativeType), NoneType), return_type=u'Transaction')
     def multi(self, watch=None):
         """
         Start of transaction.
@@ -2612,8 +2645,8 @@ class RedisProtocol(six.with_metaclass(_RedisProtocolMeta, asyncio.Protocol)):
             transaction = yield from protocol.multi()
 
             # Run commands in transaction
-            f1 = yield from transaction.set('key', 'value')
-            f1 = yield from transaction.set('another_key', 'another_value')
+            f1 = yield from transaction.set(u'key', u'value')
+            f2 = yield from transaction.set(u'another_key', u'another_value')
 
             # Commit transaction
             yield from transaction.execute()
@@ -2629,10 +2662,7 @@ class RedisProtocol(six.with_metaclass(_RedisProtocolMeta, asyncio.Protocol)):
 
         # Call watch
         if watch is not None:
-            for k in watch:
-                result = yield From(
-                    self._query(b'watch', self.encode_from_native(k)))
-                assert result == b'OK'
+            yield From(self.watch(watch))
 
         # Call multi
         result = yield From(self._query(b'multi'))

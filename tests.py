@@ -2426,22 +2426,22 @@ class RedisBytesWithoutGlobalEventloopProtocolTest(RedisBytesProtocolTest):
         super(RedisBytesWithoutGlobalEventloopProtocolTest, self).tearDown()
 
 
-# def _start_redis_server(loop):
-#     print('Running Redis server REDIS_HOST=%r REDIS_PORT=%r...' % (HOST, PORT))
+def _start_redis_server(loop):
+    print('Running Redis server REDIS_HOST=%r REDIS_PORT=%r...' % (HOST, PORT))
 
-#     redis_srv = loop.run_until_complete(
-#         asyncio.create_subprocess_exec(
-#             'redis-server',
-#             '--port', str(PORT),
-#             ('--bind' if PORT else '--unixsocket'), HOST,
-#             '--maxclients', '100',
-#             '--save', '""',
-#             '--loglevel', 'warning',
-#             loop=loop,
-#             stdout=open(os.devnull),
-#             stderr=open(os.devnull)))
-#     loop.run_until_complete(asyncio.sleep(.05, loop=loop))
-#     return redis_srv
+    redis_srv = loop.run_until_complete(
+        asyncio.create_subprocess_exec(
+            'redis-server',
+            '--port', str(PORT),
+            ('--bind' if PORT else '--unixsocket'), HOST,
+            '--maxclients', '100',
+            '--save', '""',
+            '--loglevel', 'warning',
+            loop=loop,
+            stdout=open(os.devnull),
+            stderr=open(os.devnull)))
+    loop.run_until_complete(asyncio.sleep(.05, loop=loop))
+    return redis_srv
 
 
 @unittest.skipIf(hiredis is None, 'Hiredis not found.')

@@ -2438,10 +2438,10 @@ def _start_redis_server(loop):
             '--save', '""',
             '--loglevel', 'warning',
             loop=loop,
-            # stdout=open(os.devnull),
-            # stderr=open(os.devnull)
+            stdout=open(os.devnull),
+            stderr=open(os.devnull)
         )
-        )
+    )
     loop.run_until_complete(asyncio.sleep(.05, loop=loop))
     return redis_srv
 

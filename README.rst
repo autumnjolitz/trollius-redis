@@ -9,18 +9,21 @@ Redis client for Python trollius (ported from asyncio-redis for Python 3)
     # |Build Status2| 
 
 
-Redis client for the `PEP 3156`_ Python event loop.
+Redis client for the `PEP 3156`_ Python event loop ported to Trollius.
 
 .. _PEP 3156: http://legacy.python.org/dev/peps/pep-3156/
 
 This Redis library is a completely asynchronous, non-blocking client for a
-Redis server. It depends on trollius (asyncio-compatible for PEP 3156) and
+Redis server. It depends on trollius (asyncio compatible for PEP 3156) and
 therefore it requires Python 2.
 
 If you're new to asyncio, it can be helpful to check out
 `the asyncio documentation`_ first.
 
 .. _the asyncio documentation: http://docs.python.org/dev/library/asyncio.html
+
+To see the original awesome driver, I advise you to take a look at .. _asyncio-redis: https://github.com/jonathanslenders/asyncio-redis.git
+
 
 Features
 --------

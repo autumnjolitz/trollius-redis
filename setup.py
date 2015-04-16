@@ -22,13 +22,13 @@ with open("README.rst", 'r') as fh:
 setup(
     name='trollius_redis',
     author='Jonathan Slenders, Ben Jolitz',
-    author_email="ben.jolitz+asyncio_trollius@gmail.com",
+    author_email="ben.jolitz+trollius_redis@gmail.com",
     classifiers=[
         # How mature is this project? Common values are
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers',
@@ -42,7 +42,6 @@ setup(
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',

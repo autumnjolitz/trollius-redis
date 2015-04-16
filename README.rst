@@ -1,7 +1,17 @@
-Redis client for Python trollius (ported from asyncio-redis for Python 3)
+Redis client for Python trollius
 ===========================================================================
+(ported from `asyncio-redis`_)
 
 |Build Status|
+
+
+Supports
+---------
+Python 2.7, 3.3-3.5
+
+
+Description
+------------
 
 
 Redis client for the `PEP 3156`_ Python event loop ported to Trollius.
@@ -9,8 +19,8 @@ Redis client for the `PEP 3156`_ Python event loop ported to Trollius.
 .. _PEP 3156: http://legacy.python.org/dev/peps/pep-3156/
 
 This Redis library is a completely asynchronous, non-blocking client for a
-Redis server. It depends on trollius (asyncio compatible for PEP 3156) and
-therefore it requires Python 2.
+Redis server. It depends on trollius (asyncio compatible for PEP 3156). It
+supports Python 2 and 3 Trollius-using developers.
 
 If you're new to asyncio, it can be helpful to check out
 `the asyncio documentation`_ first.
@@ -41,7 +51,7 @@ Installation
 
 .. code::
 
-    pip install git+https://github.com/benjolitz/trollius-redis.git
+    pip install trollius-redis
 
 Documentation
 -------------
@@ -63,23 +73,23 @@ connection.
 
 .. code:: python
 
-    import trollius as asyncio
+    import trollius
     from trollius import From
     import trollius_redis
 
-    @asyncio.coroutine
+    @trollius.coroutine
     def example():
         # Create Redis connection
-        connection = yield From(trollius_redis.Connection.create(host='localhost', port=6379))
+        connection = yield From(trollius_redis.Connection.create(host=u'localhost', port=6379))
 
         # Set a key
-        yield From(connection.set('my_key', 'my_value'))
+        yield From(connection.set(u'my_key', u'my_value'))
 
         # When finished, close the connection.
         connection.close()
 
     if __name__ == '__main__':
-        loop = asyncio.get_event_loop()
+        loop = trollius.get_event_loop()
         loop.run_until_complete(example())
 
 
@@ -93,17 +103,17 @@ connection will be used for new commands.
 
 .. code:: python
 
-    import trollius as asyncio
+    import trollius
     from trollius import From
     import trollius_redis
 
-    @asyncio.coroutine
+    @trollius.coroutine
     def example():
         # Create Redis connection
-        connection = yield From(trollius_redis.Pool.create(host='localhost', port=6379, poolsize=10))
+        connection = yield From(trollius_redis.Pool.create(host=u'localhost', port=6379, poolsize=10))
 
         # Set a key
-        yield From(connection.set('my_key', 'my_value'))
+        yield From(connection.set(u'my_key', u'my_value'))
 
         # When finished, close the connection pool.
         connection.close()
@@ -114,21 +124,21 @@ Transactions example
 
 .. code:: python
 
-    import trollius as asyncio
+    import trollius
     from trollius import From
     import trollius_redis
 
-    @asyncio.coroutine
+    @trollius.coroutine
     def example():
         # Create Redis connection
-        connection = yield From(trollius_redis.Pool.create(host='localhost', port=6379, poolsize=10))
+        connection = yield From(trollius_redis.Pool.create(host=u'localhost', port=6379, poolsize=10))
 
         # Create transaction
         transaction = yield From(connection.multi())
 
         # Run commands in transaction (they return future objects)
-        f1 = yield From(transaction.set('key', 'value'))
-        f2 = yield From(transaction.set('another_key', 'another_value'))
+        f1 = yield From(transaction.set(u'key', u'value'))
+        f2 = yield From(transaction.set(u'another_key', u'another_value'))
 
         # Commit transaction
         yield From(transaction.exec())
@@ -149,25 +159,25 @@ Pubsub example
 
 .. code:: python
 
-    import trollius as asyncio
+    import trollius
     from trollius import From
     import trollius_redis
 
-    @asyncio.coroutine
+    @trollius.coroutine
     def example():
         # Create connection
-        connection = yield From(trollius_redis.Connection.create(host='localhost', port=6379))
+        connection = yield From(trollius_redis.Connection.create(host=u'localhost', port=6379))
 
         # Create subscriber.
         subscriber = yield From(connection.start_subscribe())
 
         # Subscribe to channel.
-        yield From(subscriber.subscribe([ 'our-channel' ]))
+        yield From(subscriber.subscribe([u'our-channel']))
 
         # Inside a while loop, wait for incoming events.
         while True:
             reply = yield From(subscriber.next_published())
-            print('Received: ', repr(reply.value), 'on channel', reply.channel)
+            print(u'Received: ', repr(reply.value), u'on channel', reply.channel)
 
         # When finished, close the connection.
         connection.close()
@@ -178,29 +188,29 @@ LUA Scripting example
 
 .. code:: python
 
-    import trollius as asyncio
+    import trollius
     from trollius import From
     import trollius_redis
 
     code = \
-    """
+    u"""
     local value = redis.call('GET', KEYS[1])
     value = tonumber(value)
     return value * ARGV[1]
     """
 
-    @asyncio.coroutine
+    @trollius.coroutine
     def example():
-        connection = yield From(trollius_redis.Connection.create(host='localhost', port=6379))
+        connection = yield From(trollius_redis.Connection.create(host=u'localhost', port=6379))
 
         # Set a key
-        yield From(connection.set('my_key', '2'))
+        yield From(connection.set(u'my_key', u'2'))
 
         # Register script
         multiply = yield From(connection.register_script(code))
 
         # Run script
-        script_reply = yield From(multiply.run(keys=['my_key'], args=['5']))
+        script_reply = yield From(multiply.run(keys=[u'my_key'], args=[u'5']))
         result = yield From(script_reply.return_value())
         print(result) # prints 2 * 5
 
@@ -213,30 +223,30 @@ Example using the Protocol class
 
 .. code:: python
 
-    import trollius as asyncio
+    import trollius
     from trollius import From
     import trollius_redis
 
-    @asyncio.coroutine
+    @trollius.coroutine
     def example():
-        loop = asyncio.get_event_loop()
+        loop = trollius.get_event_loop()
 
         # Create Redis connection
         transport, protocol = yield From(loop.create_connection(
-                    trollius_redis.RedisProtocol, 'localhost', 6379))
+                    trollius_redis.RedisProtocol, u'localhost', 6379))
 
         # Set a key
-        yield From(protocol.set('my_key', 'my_value'))
+        yield From(protocol.set(u'my_key', u'my_value'))
 
         # Get a key
-        result = yield From(protocol.get('my_key'))
+        result = yield From(protocol.get(u'my_key'))
         print(result)
 
         # Close transport when finished.
         transport.close()
 
     if __name__ == '__main__':
-        asyncio.get_event_loop().run_until_complete(example())
+        trollius.get_event_loop().run_until_complete(example())
 
 
 .. |Build Status| image:: https://travis-ci.org/benjolitz/trollius-redis.svg?branch=master

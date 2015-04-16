@@ -1,6 +1,16 @@
 CHANGELOG
 =========
 
+
+0.0.1: 2015-04-15:
+-------------------
+- Port of AsyncIO-Redis has been converted solely to Trollius and is now on it's own.
+- Reset the version counter as we have diverged from the origin.
+- @typedef decorator to mimick original type checker
+- Correction of all tests and function signatures
+- Looks like we're now committed to make this a healthy port.
+
+
 0.13.4: 2014-08-18
 ------------------
 

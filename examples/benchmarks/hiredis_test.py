@@ -8,6 +8,7 @@ import trollius as asyncio
 from trollius import From
 import trollius_redis
 import time
+import six
 
 try:
     import hiredis
@@ -29,7 +30,7 @@ def test1(connection):
 @asyncio.coroutine
 def test2(connection):
     """ Get/set of a hash of 100 items (with _asdict) """
-    d = {unicode(i): unicode(i) for i in range(100)}
+    d = {six.text_type(i): six.text_type(i) for i in range(100)}
 
     yield From(connection.delete([u'key']))
     yield From(connection.hmset(u'key', d))
@@ -40,7 +41,7 @@ def test2(connection):
 @asyncio.coroutine
 def test3(connection):
     """ Get/set of a hash of 100 items (without _asdict) """
-    d = {unicode(i): unicode(i) for i in range(100)}
+    d = {six.text_type(i): six.text_type(i) for i in range(100)}
 
     yield From(connection.delete([u'key']))
     yield From(connection.hmset(u'key', d))
@@ -58,7 +59,7 @@ def test3(connection):
 @asyncio.coroutine
 def test4(connection):
     """ sadd/smembers of a set of 100 items. (with _asset) """
-    s = {unicode(i) for i in range(100)}
+    s = {six.text_type(i) for i in range(100)}
 
     yield From(connection.delete([u'key']))
     yield From(connection.sadd(u'key', list(s)))
@@ -70,7 +71,7 @@ def test4(connection):
 @asyncio.coroutine
 def test5(connection):
     """ sadd/smembers of a set of 100 items. (without _asset) """
-    s = {unicode(i) for i in range(100)}
+    s = {six.text_type(i) for i in range(100)}
 
     yield From(connection.delete([u'key']))
     yield From(connection.sadd(u'key', list(s)))

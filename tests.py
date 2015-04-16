@@ -106,6 +106,7 @@ class TestCase(unittest.TestCase):
     def tearDown(self):
         # Collect garbage on tearDown. (This can print ResourceWarnings.)
         result = gc.collect()
+        result
 
 
 class RedisProtocolTest(TestCase):
@@ -117,7 +118,11 @@ class RedisProtocolTest(TestCase):
     def test_ping(self, transport, protocol):
         result = yield From(protocol.ping())
         self.assertEqual(result, StatusReply(u'PONG'))
-        self.assertEqual(repr(result), "StatusReply(status=u'PONG')")
+        if six.PY2:
+            d = "StatusReply(status=u'PONG')"
+        else:
+            d = "StatusReply(status='PONG')"
+        self.assertEqual(repr(result), d)
 
     @redis_test
     def test_echo(self, transport, protocol):
@@ -1965,7 +1970,7 @@ class RedisBytesProtocolTest(TestCase):
 
         @asyncio.coroutine
         def sender():
-            value = yield From(protocol.publish(b'our_channel', b'message1'))
+            yield From(protocol.publish(b'our_channel', b'message1'))
 
         f = asyncio.async(listener(), loop=self.loop)
         yield From(asyncio.sleep(.5, loop=self.loop))

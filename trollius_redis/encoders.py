@@ -10,6 +10,7 @@ __all__ = (
     'BytesEncoder',
     'UTF8Encoder',
 )
+import six
 
 
 class BaseEncoder(object):
@@ -41,7 +42,7 @@ class BytesEncoder(BaseEncoder):
     For raw access to the Redis database.
     """
     #: The native Python type from which we encode, or to which we decode.
-    native_type = bytes
+    native_type = six.binary_type
 
     def encode_from_native(self, data):
         return data
@@ -59,7 +60,7 @@ class StringEncoder(BaseEncoder):
     encoding = None
 
     #: The native Python type from which we encode, or to which we decode.
-    native_type = unicode
+    native_type = six.text_type
 
     def encode_from_native(self, data):
         """ string to bytes """

@@ -273,7 +273,7 @@ class PostProcessors(object):
             (NativeType, NoneType): cls.bytes_to_native_or_none,
             InfoReply: cls.bytes_to_info,
             ClientListReply: cls.bytes_to_clientlist,
-            unicode: cls.bytes_to_str,
+            six.text_type: cls.bytes_to_str,
             bool: cls.int_to_bool,
             BlockingPopReply: cls.multibulk_as_blocking_pop_reply,
             ZRangeReply: cls.multibulk_as_zrangereply,
@@ -281,7 +281,7 @@ class PostProcessors(object):
             StatusReply: cls.bytes_to_status_reply,
             (StatusReply, NoneType): cls.bytes_to_status_reply_or_none,
             int: None,
-            (int, long): None,
+            six.integer_types: None,
             (int, NoneType): None,
             ConfigPairReply: cls.multibulk_as_configpair,
             ListOf(bool): cls.multibulk_as_boolean_list,
@@ -418,7 +418,7 @@ class PostProcessors(object):
     @staticmethod
     @asyncio.coroutine
     def int_to_bool(protocol, result):
-        assert isinstance(result, (int, long)), \
+        assert isinstance(result, six.integer_types), \
             "Cannot coerce {0}. Wrong data type.".format(type(result))
         return bool(result)  # Convert int to bool
 
@@ -614,7 +614,7 @@ class CommandCreator(object):
         def get_name(type_):
             """ Turn type annotation into doc string. """
             try:
-                return {
+                v = {
                     BlockingPopReply: (
                         ":class:`BlockingPopReply <trollius_redis.replies."
                         "BlockingPopReply>`"),
@@ -669,20 +669,26 @@ class CommandCreator(object):
                     bool: 'bool',
                     dict: 'dict',
                     float: 'float',
-                    unicode: 'str',
-                    str: 'bytes',
+                    six.text_type: 'str',
+                    six.binary_type: 'bytes',
 
                     list: 'list',
                     set: 'set',
                     dict: 'dict',
-                    long: 'int',
 
                     # XXX: Because of circulare references, we cannot use the
                     # real types here.
                     'Transaction': ":class:`trollius_redis.Transaction`",
                     'Subscription': ":class:`trollius_redis.Subscription`",
                     'Script': ":class:`~trollius_redis.Script`",
-                }[type_]
+                }
+                try:
+                    long
+                except NameError:
+                    pass
+                else:
+                    v[long] = 'long'
+                return v[type_]
             except KeyError:
                 if isinstance(type_, ListOf):
                     return "List or iterable of %s" % get_name(type_.type)
@@ -855,7 +861,7 @@ class _RedisProtocolMeta(type):
         return type.__new__(cls, name, bases, attrs)
 
 
-class RedisProtocol(asyncio.Protocol):
+class RedisProtocol(six.with_metaclass(_RedisProtocolMeta, asyncio.Protocol)):
     """
     The Redis Protocol implementation.
 
@@ -878,7 +884,6 @@ class RedisProtocol(asyncio.Protocol):
                                 enabled.
     :type enable_typechecking: bool
     """
-    __metaclass__ = _RedisProtocolMeta
 
     def __init__(self, password=None, db=0, encoder=None,
                  connection_lost_callback=None, enable_typechecking=True,
@@ -1841,7 +1846,7 @@ class RedisProtocol(asyncio.Protocol):
             assert isinstance(k, self.native_type), \
                 "Key in dictionary is {0}, not {1}".format(
                     type(k), self.native_type)
-            assert isinstance(score, (long, int, float)), \
+            assert isinstance(score, six.integer_types + (float,)), \
                 "Value in dictionary is not numeric, it is {0}".format(
                     type(score))
 
@@ -2829,7 +2834,7 @@ class Subscription(object):
         raise Return(r)
 
 
-class HiRedisProtocol(RedisProtocol):
+class HiRedisProtocol(six.with_metaclass(_RedisProtocolMeta, RedisProtocol)):
     """
     Protocol implementation that uses the `hiredis` library for parsing the
     incoming data. This will be faster in many cases, but not necessarily
@@ -2839,7 +2844,6 @@ class HiRedisProtocol(RedisProtocol):
     you won't see the first item of a multi bulk reply, before the whole
     response has been parsed.
     """
-    __metaclass__ = _RedisProtocolMeta
 
     def __init__(self, password=None, db=0, encoder=None,
                  connection_lost_callback=None, enable_typechecking=True,
@@ -2872,9 +2876,11 @@ class HiRedisProtocol(RedisProtocol):
                 break
 
     def _process_hiredis_item(self, item, cb):
-        if isinstance(item, (bytes, int, long)):
-            if isinstance(item, long):
+        if isinstance(item, six.integer_types):
+            if not isinstance(item, int):
                 item = int(item)
+            cb(item)
+        elif isinstance(item, bytes):
             cb(item)
         elif isinstance(item, list):
             reply = MultiBulkReply(self, len(item), loop=self._loop)

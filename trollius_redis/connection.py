@@ -3,7 +3,8 @@ from .protocol import RedisProtocol, _all_commands
 import trollius as asyncio
 from trollius import From, Return
 import logging
-import urlparse
+from six.moves.urllib.parse import (parse_qs, urlparse)
+
 
 __all__ = ('Connection', )
 
@@ -73,10 +74,10 @@ class Connection(object):
     @asyncio.coroutine
     def from_uri(uri):
         kwargs = {}
-        parsed_uri = urlparse.urlparse(uri)
+        parsed_uri = urlparse(uri)
         if parsed_uri.scheme.lower().encode('utf8') == b'unix':
             kwargs['host'] = parsed_uri.path
-            params = urlparse.parse_qs(parsed_uri.query)
+            params = parse_qs(parsed_uri.query)
             if 'db' in params:
                 kwargs['db'] = int(params['db'][0], 10)
             if '@' in parsed_uri.netloc:

@@ -8,6 +8,9 @@ try:
 except ImportError:
     install_requires.append('hiredis')
 
+with open("README.rst", 'r') as fh:
+    description = fh.read()
+
 setup(
     name='trollius_redis',
     author='Jonathan Slenders, Ben Jolitz',
@@ -16,7 +19,7 @@ setup(
     url='https://github.com/benjolitz/trollius-redis',
 
     description='PEP 3156 implementation of the redis protocol.',
-    long_description=open("README.rst", 'rb').read(),
+    long_description=description,
     packages=['trollius_redis'],
     install_requires=install_requires
 )

@@ -1,6 +1,10 @@
 Authors
 =======
 
+Fork maintainer
+---------------
+Ben Jolitz <ben.jolitz+trollius_redis AT gmail.com>
+
 Creator
 -------
 Jonathan Slenders <jonathan AT slenders.be>

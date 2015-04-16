@@ -2545,7 +2545,7 @@ class RedisProtocol(asyncio.Protocol):
 
     @_command
     @typedef(NativeType, NativeType, return_type=SetCursor)
-    def sscan(self, key, match='*'):
+    def sscan(self, key, match=u'*'):
         """
         Incrementally iterate set elements
 
@@ -2553,7 +2553,7 @@ class RedisProtocol(asyncio.Protocol):
         """
         if False:
             yield
-        name = 'sscan(key=%r match=%r)' % (key, match)
+        name = u'sscan(key=%r match=%r)' % (key, match)
 
         @typedef(NativeType, return_type=Cursor)
         def scan(cursor):
@@ -2563,14 +2563,14 @@ class RedisProtocol(asyncio.Protocol):
 
     @_command
     @typedef(NativeType, NativeType, return_type=DictCursor)
-    def hscan(self, key, match='*'):
+    def hscan(self, key, match=u'*'):
         """
         Incrementally iterate hash fields and associated values
         Also see: :func:`~trollius_redis.RedisProtocol.scan`
         """
         if False:
             yield
-        name = 'hscan(key=%r match=%r)' % (key, match)
+        name = u'hscan(key=%r match=%r)' % (key, match)
 
         @typedef(NativeType, return_type=Cursor)
         def scan(cursor):
@@ -2580,14 +2580,14 @@ class RedisProtocol(asyncio.Protocol):
 
     @_command
     @typedef(NativeType, NativeType, return_type=DictCursor)
-    def zscan(self, key, match='*'):
+    def zscan(self, key, match=u'*'):
         """
         Incrementally iterate sorted sets elements and associated scores
         Also see: :func:`~trollius_redis.RedisProtocol.scan`
         """
         if False:
             yield
-        name = 'zscan(key=%r match=%r)' % (key, match)
+        name = u'zscan(key=%r match=%r)' % (key, match)
 
         @typedef(NativeType, return_type=Cursor)
         def scan(cursor):

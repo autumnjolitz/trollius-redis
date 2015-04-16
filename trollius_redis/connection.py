@@ -24,6 +24,7 @@ class Connection(object):
     @asyncio.coroutine
     def create(cls, host='localhost', port=6379, password=None, db=0,
                encoder=None, auto_reconnect=True, loop=None,
+               enable_typechecking=True,
                protocol_class=RedisProtocol):
         """
         :param host: Address, either host or unix domain socket path
@@ -63,7 +64,8 @@ class Connection(object):
         # Create protocol instance
         connection.protocol = protocol_class(
             password=password, db=db, encoder=encoder,
-            connection_lost_callback=connection_lost, loop=connection._loop)
+            connection_lost_callback=connection_lost, loop=connection._loop,
+            enable_typechecking=enable_typechecking)
 
         # Connect
         yield From(connection._reconnect())
@@ -72,7 +74,7 @@ class Connection(object):
 
     @staticmethod
     @asyncio.coroutine
-    def from_uri(uri):
+    def from_uri(uri, enable_type_checking=True):
         kwargs = {}
         parsed_uri = urlparse(uri)
         if parsed_uri.scheme.lower().encode('utf8') == b'unix':
@@ -117,6 +119,7 @@ class Connection(object):
         for key in kwargs:
             if isinstance(kwargs[key], unicode):
                 kwargs[key] = kwargs[key].encode('utf8')
+        kwargs['enable_type_checking'] = enable_type_checking
         conn = yield From(Connection.create(**kwargs))
         raise Return(conn)
 

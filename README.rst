@@ -3,11 +3,6 @@ Redis client for Python trollius (ported from asyncio-redis for Python 3)
 
 |Build Status|
 
-..
-    # Don't show the Build status on drone.io. Update script first. It's still
-    # using an older Redis version.
-    # |Build Status2| 
-
 
 Redis client for the `PEP 3156`_ Python event loop ported to Trollius.
 
@@ -244,9 +239,6 @@ Example using the Protocol class
         asyncio.get_event_loop().run_until_complete(example())
 
 
+.. |Build Status| image:: https://travis-ci.org/benjolitz/trollius-redis.svg?branch=master
+    :target: https://travis-ci.org/benjolitz/trollius-redis
 
-.. |Build Status| image:: https://travis-ci.org/benjolitz/trollius-redis.png
-    :target: https://travis-ci.org/benjolitz/trollius-redis#
-
-.. |Build Status2| image:: https://drone.io/github.com/benjolitz/trollius-redis/status.png
-    :target: https://drone.io/github.com/benjolitz/trollius-redis/latest

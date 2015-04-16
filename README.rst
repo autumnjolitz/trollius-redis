@@ -22,7 +22,9 @@ If you're new to asyncio, it can be helpful to check out
 
 .. _the asyncio documentation: http://docs.python.org/dev/library/asyncio.html
 
-To see the original awesome driver, I advise you to take a look at .. _asyncio-redis: https://github.com/jonathanslenders/asyncio-redis.git
+To see the original awesome driver, I advise you to take a look at `asyncio-redis`_.
+
+.. _asyncio-redis: https://github.com/jonathanslenders/asyncio-redis.git
 
 
 Features

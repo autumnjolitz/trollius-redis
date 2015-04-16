@@ -143,7 +143,7 @@ Transactions example
         f2 = yield From(transaction.set(u'another_key', u'another_value'))
 
         # Commit transaction
-        yield From(transaction.exec())
+        yield From(transaction.execute())
 
         # Retrieve results
         result1 = yield From(f1)

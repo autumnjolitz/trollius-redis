@@ -56,7 +56,7 @@ except ImportError:
 from six.moves import range
 
 PORT = int(os.environ.get('REDIS_PORT', 6379))
-HOST = os.environ.get('REDIS_HOST', 'localhost')
+HOST = os.environ.get('REDIS_HOST', '127.0.0.1')
 START_REDIS_SERVER = bool(os.environ.get('START_REDIS_SERVER', False))
 
 
@@ -2438,8 +2438,10 @@ def _start_redis_server(loop):
             '--save', '""',
             '--loglevel', 'warning',
             loop=loop,
-            stdout=open(os.devnull),
-            stderr=open(os.devnull)))
+            # stdout=open(os.devnull),
+            # stderr=open(os.devnull)
+        )
+        )
     loop.run_until_complete(asyncio.sleep(.05, loop=loop))
     return redis_srv
 

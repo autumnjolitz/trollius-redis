@@ -746,13 +746,13 @@ class RedisProtocolTest(TestCase):
         self.assertIsInstance(result, SetReply)
         result = yield From(result.asset())
         self.assertIsInstance(result, set)
-        self.assertEqual(result, {u'key', u'key2'})
+        self.assertEqual(result, set([u'key', u'key2']))
 
         result = yield From(protocol.hvals(u'my_hash'))
         self.assertIsInstance(result, ListReply)
         result = yield From(result.aslist())
         self.assertIsInstance(result, list)
-        self.assertEqual(set(result), {u'value', u'value2'})
+        self.assertEqual(set(result), set([u'value', u'value2']))
 
         # HDel
         result = yield From(protocol.hdel(u'my_hash', [u'key2']))
@@ -763,7 +763,7 @@ class RedisProtocolTest(TestCase):
         result = yield From(protocol.hkeys(u'my_hash'))
         self.assertIsInstance(result, SetReply)
         result = yield From(result.asset())
-        self.assertEqual(result, {u'key'})
+        self.assertEqual(result, set([u'key']))
 
     @redis_test
     def test_keys(self, transport, protocol):
@@ -780,11 +780,11 @@ class RedisProtocolTest(TestCase):
             all_keys.append(r)
         self.assertEqual(
             set(all_keys),
-            {
+            set([
                 u'our-keytest-key1',
                 u'our-keytest-key2',
                 u'our-keytest-key3'
-            })
+            ]))
 
     @redis_test
     def test_hmset_get(self, transport, protocol):
@@ -1822,7 +1822,7 @@ class RedisProtocolTest(TestCase):
 
         # Test smembers
         result = yield From(protocol.smembers_asset(u'my_set'))
-        self.assertEqual(result, {u'value1', u'value2'})
+        self.assertEqual(result, set([u'value1', u'value2']))
         self.assertIsInstance(result, set)
 
         # Test hgetall_asdict
@@ -1844,7 +1844,7 @@ class RedisProtocolTest(TestCase):
         self.assertEqual(result1, [u'a', u'b'])
         self.assertIsInstance(result1, list)
 
-        self.assertEqual(result2, {u'value1', u'value2'})
+        self.assertEqual(result2, set([u'value1', u'value2']))
         self.assertIsInstance(result2, set)
 
         self.assertEqual(result3, {u'a': u'1', u'b': u'2', u'c': u'3'})

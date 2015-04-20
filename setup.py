@@ -45,7 +45,7 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
     ],
-    version='0.1.2',
+    version='0.1.3',
     license='LICENSE.txt',
     url='https://github.com/benjolitz/trollius-redis',
 

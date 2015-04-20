@@ -2,7 +2,8 @@ Redis client for Python trollius
 ===========================================================================
 (ported from `asyncio-redis`_)
 
-|Build Status| |Wheel Status|
+|Build Status| |Wheel Status| |Doc Status|
+
 
 
 Supports
@@ -259,4 +260,8 @@ Example using the Protocol class
 .. |Wheel Status| image:: https://pypip.in/wheel/trollius_redis/badge.svg
     :target: https://pypi.python.org/pypi/trollius_redis/
     :alt: Wheel Status
+
+.. |Doc Status| image:: https://readthedocs.org/projects/trollius-redis/badge/?version=latest
+    :target: https://readthedocs.org/projects/trollius-redis/?badge=latest
+    :alt: Documentation Status
 

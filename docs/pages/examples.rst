@@ -264,12 +264,13 @@ it as follows:
 
 .. code:: python
 
-    import asyncio
+    import trollius
+    from trollius import From
     import trollius_redis
 
-    @asyncio.coroutine
+    @trollius.coroutine
     def example():
-        loop = asyncio.get_event_loop()
+        loop = trollius.get_event_loop()
 
         # Create Redis connection
         transport, protocol = yield From(loop.create_connection(
@@ -283,7 +284,7 @@ it as follows:
         print(result)
 
     if __name__ == '__main__':
-        asyncio.get_event_loop().run_until_complete(example())
+        trollius.get_event_loop().run_until_complete(example())
 
 
 .. note:: It is not recommended to use the Protocol class directly, because the

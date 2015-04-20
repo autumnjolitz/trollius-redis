@@ -49,8 +49,8 @@ Start by taking a look at :ref:`some examples<redis-examples>`.
 Author and License
 ------------------
 
-The ``trollius_redis`` package is a port of the ``asyncio_redis`` package 
-originally written by Jonathan Slenders.  It's BSD
+The ``trollius_redis`` package is a port done by Ben Jolitz
+of the ``asyncio_redis`` package originally written by Jonathan Slenders.  It's BSD
 licensed and freely available. Feel free to improve this package and
 `send a pull request`_.
 

@@ -21,7 +21,7 @@ with open("README.rst", 'r') as fh:
 
 setup(
     name='trollius_redis',
-    author='Jonathan Slenders, Ben Jolitz',
+    author='Ben Jolitz',
     author_email="ben.jolitz+trollius_redis@gmail.com",
     classifiers=[
         # How mature is this project? Common values are
@@ -45,7 +45,7 @@ setup(
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
     ],
-    version='0.1.3',
+    version='0.1.4',
     license='LICENSE.txt',
     url='https://github.com/benjolitz/trollius-redis',
 

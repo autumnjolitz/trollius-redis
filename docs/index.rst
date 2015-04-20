@@ -40,7 +40,7 @@ Installation
 
 ::
 
-    pip install trollius_redis
+    pip install trollius-redis
 
 
 Start by taking a look at :ref:`some examples<redis-examples>`.

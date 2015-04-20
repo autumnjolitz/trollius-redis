@@ -1274,16 +1274,16 @@ class RedisProtocol(six.with_metaclass(_RedisProtocolMeta, asyncio.Protocol)):
 
         ::
 
-            yield from protocol.set('key', 'value')
-            result = yield from protocol.get('key')
+            yield From(protocol.set(u'key', u'value'))
+            result = yield From(protocol.get(u'key'))
             assert result == 'value'
 
         To set a value and its expiration, only if key not exists, do:
 
         ::
 
-            yield from protocol.set(
-                'key', 'value', expire=1, only_if_not_exists=True)
+            yield From(protocol.set(
+                u'key', u'value', expire=1, only_if_not_exists=True))
 
         This will send: ``SET key value EX 1 NX`` at the network.
         To set value and its expiration in milliseconds, but only if
@@ -1291,8 +1291,8 @@ class RedisProtocol(six.with_metaclass(_RedisProtocolMeta, asyncio.Protocol)):
 
         ::
 
-            yield from protocol.set(
-                'key', 'value', pexpire=1000, only_if_exists=True)
+            yield From(protocol.set(
+                u'key', u'value', pexpire=1000, only_if_exists=True))
         """
         params = [
             b'set',
@@ -2159,12 +2159,12 @@ class RedisProtocol(six.with_metaclass(_RedisProtocolMeta, asyncio.Protocol)):
         ::
 
             # Create subscription
-            subscription = yield from protocol.start_subscribe()
-            yield from subscription.subscribe(['key'])
-            yield from subscription.psubscribe(['pattern*'])
+            subscription = yield From(protocol.start_subscribe())
+            yield From(subscription.subscribe([u'key']))
+            yield From(subscription.psubscribe([u'pattern*']))
 
             while True:
-                result = yield from subscription.next_published()
+                result = yield From(subscription.next_published())
                 print(result)
 
         :returns: :class:`~trollius_redis.Subscription`
@@ -2422,8 +2422,8 @@ class RedisProtocol(six.with_metaclass(_RedisProtocolMeta, asyncio.Protocol)):
 
         ::
 
-            script = yield from protocol.register_script(lua_code)
-            result = yield from script.run(keys=[...], args=[...])
+            script = yield From(protocol.register_script(lua_code))
+            result = yield From(script.run(keys=[...], args=[...]))
         """
         # The register_script APi was made compatible with the redis.py
         # library: https://github.com/andymccurdy/redis-py
@@ -2505,9 +2505,9 @@ class RedisProtocol(six.with_metaclass(_RedisProtocolMeta, asyncio.Protocol)):
 
         ::
 
-            cursor = yield from protocol.scan(match='*')
+            cursor = yield From(protocol.scan(match=u'*'))
             while True:
-                item = yield from cursor.fetchone()
+                item = yield From(cursor.fetchone())
                 if item is None:
                     break
                 else:
@@ -2515,8 +2515,8 @@ class RedisProtocol(six.with_metaclass(_RedisProtocolMeta, asyncio.Protocol)):
 
         ::
 
-            cursor = yield from protocol.scan(match='*')
-            items = yield from cursor.fetchall()
+            cursor = yield From(protocol.scan(match=u'*'))
+            items = yield From(cursor.fetchall())
 
         Also see: :func:`~trollius_redis.RedisProtocol.sscan`,
         :func:`~trollius_redis.RedisProtocol.hscan` and
@@ -2592,7 +2592,8 @@ class RedisProtocol(six.with_metaclass(_RedisProtocolMeta, asyncio.Protocol)):
         raise Return(ZCursor(name=name, scanfunc=scan))
 
     @_query_command
-    @typedef(six.binary_type, NativeType, int, NativeType, return_type=_ScanPart)
+    @typedef(six.binary_type, NativeType, int, NativeType,
+             return_type=_ScanPart)
     def _do_scan(self, verb, key, cursor, match):
         return self._query(verb, self.encode_from_native(key),
                            self._encode_int(cursor),
@@ -2642,18 +2643,18 @@ class RedisProtocol(six.with_metaclass(_RedisProtocolMeta, asyncio.Protocol)):
 
         ::
 
-            transaction = yield from protocol.multi()
+            transaction = yield From(protocol.multi())
 
             # Run commands in transaction
-            f1 = yield from transaction.set(u'key', u'value')
-            f2 = yield from transaction.set(u'another_key', u'another_value')
+            f1 = yield From(transaction.set(u'key', u'value'))
+            f2 = yield From(transaction.set(u'another_key', u'another_value'))
 
             # Commit transaction
-            yield from transaction.execute()
+            yield From(transaction.execute())
 
             # Retrieve results (you can also use asyncio.tasks.gather)
-            result1 = yield from f1
-            result2 = yield from f2
+            result1 = yield From(f1)
+            result2 = yield From(f2)
 
         :returns: A :class:`trollius_redis.Transaction` instance.
         """
@@ -2754,10 +2755,10 @@ class Script(object):
 
         ::
 
-            script_reply = yield from script.run(keys=[], args=[])
+            script_reply = yield From(script.run(keys=[], args=[]))
 
             # If the LUA script returns something, retrieve the return value
-            result = yield from script_reply.return_value()
+            result = yield From(script_reply.return_value())
 
         This will raise a :class:`~trollius_redis.exceptions.ScriptKilledError`
         exception if the script was killed.

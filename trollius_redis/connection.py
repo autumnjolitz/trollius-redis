@@ -17,8 +17,8 @@ class Connection(object):
 
     ::
 
-        connection = yield from Connection.create(host='localhost', port=6379)
-        result = yield from connection.set('key', 'value')
+        connection = yield From(Connection.create(host='localhost', port=6379))
+        result = yield From(connection.set('key', 'value'))
     """
     @classmethod
     @asyncio.coroutine
@@ -75,6 +75,22 @@ class Connection(object):
     @staticmethod
     @asyncio.coroutine
     def from_uri(uri, **additional_args):
+        """
+        Convert a redis:// or unix:// URI as supported in the redis-py driver.
+        
+        :param uri: Address, either host or unix domain socket path
+        :type uri: str
+
+        :param encoder: Encoder to use for encoding to or decoding
+                        from redis bytes to a native type.
+        :type encoder: :class:`~trollius_redis.encoders.BaseEncoder` instance.
+        :param auto_reconnect: Enable auto reconnect
+        :type auto_reconnect: bool
+        :param loop: (optional) asyncio event loop.
+        :type protocol_class: :class:`~trollius_redis.RedisProtocol`
+        :param protocol_class: (optional) redis protocol implementation
+        """
+
         kwargs = {}
         parsed_uri = urlparse(uri)
         if parsed_uri.scheme.lower().encode('utf8') == b'unix':

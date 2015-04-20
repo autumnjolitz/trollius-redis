@@ -21,8 +21,9 @@ class Pool(object):
 
     ::
 
-        pool = yield from Pool.create(host='localhost', port=6379, poolsize=10)
-        result = yield from connection.set('key', 'value')
+        pool = yield From(
+            Pool.create(host='localhost', port=6379, poolsize=10))
+        result = yield From(connection.set('key', 'value'))
     """
     @classmethod
     @asyncio.coroutine

@@ -261,7 +261,7 @@ Example using the Protocol class
     :target: https://pypi.python.org/pypi/trollius_redis/
     :alt: Wheel Status
 
-.. |Doc Status| image:: https://readthedocs.org/projects/trollius-redis/badge/?version=latest
+.. |Doc Status| image:: https://readthedocs.org/projects/trollius-redis/badge/
     :target: https://readthedocs.org/projects/trollius-redis/?badge=latest
     :alt: Documentation Status
 

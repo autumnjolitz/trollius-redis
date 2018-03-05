@@ -257,7 +257,7 @@ Example using the Protocol class
     :alt: Build Status from Travis-CI
 
 
-.. |Wheel Status| image:: https://pypip.in/wheel/trollius_redis/badge.svg
+.. |Wheel Status| image:: https://img.shields.io/pypi/wheel/trollius_redis.svg
     :target: https://pypi.python.org/pypi/trollius_redis/
     :alt: Wheel Status
 
